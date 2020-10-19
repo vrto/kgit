@@ -2,6 +2,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     kotlin("jvm") version "1.4.10"
+    application
 }
 
 group = "org.example"
@@ -13,8 +14,14 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib"))
+    implementation("com.github.ajalt.clikt:clikt:3.0.1")
     testImplementation(platform("org.junit:junit-bom:5.7.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")
+    testImplementation("com.willowtreeapps.assertk:assertk-jvm:0.21")
+}
+
+application {
+    mainClassName = "kgit.CliKt"
 }
 
 tasks.test {
@@ -24,7 +31,6 @@ tasks.test {
     }
 }
 
-// config JVM target to 1.8 for kotlin compilation tasks
 tasks.withType<KotlinCompile>().configureEach {
     kotlinOptions.jvmTarget = "11"
 }

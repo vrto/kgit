@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+./build/install/kgit/bin/kgit "$@"
