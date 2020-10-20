@@ -33,4 +33,9 @@ object Data {
             Files.createDirectory(objectsDirectory)
         }
     }
+
+    fun getObject(oid: String): String {
+        val obj = Path.of("$KGIT_DIR/objects/$oid")
+        return String(Files.readAllBytes(obj))
+    }
 }

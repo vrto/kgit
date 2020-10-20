@@ -36,6 +36,17 @@ class KGitTest {
         assertFileExists("$KGIT_DIR/objects/$oid")
     }
 
+    @Test
+    fun `getObject prints an object using the given OID`() {
+        Data.init()
+        val originalContent = "sample object"
+        val oid = Data.hashObject(originalContent.toByteArray())
+
+        val content = Data.getObject(oid)
+
+        assertThat(content).isEqualTo(originalContent)
+    }
+
     private fun assertFileDoesNotExists(path: String) {
         assertThat(Files.exists(Path.of(path))).isFalse()
     }

@@ -8,7 +8,7 @@ import java.nio.file.Path
 import java.nio.file.Paths
 
 fun main(args: Array<String>) {
-    KGitCli().subcommands(Init(), HashObject()).main(args)
+    KGitCli().subcommands(Init(), HashObject(), CatFile()).main(args)
 }
 
 class KGitCli : CliktCommand(help = "Simple Git-like VCS program") {
@@ -30,5 +30,14 @@ class HashObject : CliktCommand(name = "hash-object", help = "store an arbitrary
         val data = Files.readAllBytes(Path.of(fileName))
         val oid = Data.hashObject(data)
         echo(oid)
+    }
+}
+
+class CatFile : CliktCommand(name = "cat-file", help = "Print hashed object") {
+
+    private val oid: String by argument(help = "OID to print")
+
+    override fun run() {
+        echo(Data.getObject(oid))
     }
 }
