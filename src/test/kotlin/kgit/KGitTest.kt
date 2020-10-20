@@ -1,6 +1,7 @@
 package kgit
 
 import assertk.assertThat
+import assertk.assertions.isEqualTo
 import assertk.assertions.isFalse
 import assertk.assertions.isTrue
 import org.junit.jupiter.api.BeforeEach
@@ -12,15 +13,34 @@ class KGitTest {
 
     @BeforeEach
     internal fun setUp() {
-        Files.deleteIfExists(Path.of(KGIT_DIR))
+        Path.of(KGIT_DIR).toFile().deleteRecursively()
     }
 
     @Test
     fun `init creates a new directory`() {
-        assertThat(Files.exists(Path.of(KGIT_DIR))).isFalse()
+        assertFileDoesNotExists(KGIT_DIR)
 
         Data.init()
 
-        assertThat(Files.exists(Path.of(KGIT_DIR))).isTrue()
+        assertFileExists(KGIT_DIR)
+    }
+
+    @Test
+    fun `hashObject stores an object and returns an OID`() {
+        assertFileDoesNotExists("$KGIT_DIR/objects")
+        Data.init()
+
+        val oid = Data.hashObject("sample data".toByteArray())
+        assertThat(oid.length).isEqualTo(40)
+
+        assertFileExists("$KGIT_DIR/objects/$oid")
+    }
+
+    private fun assertFileDoesNotExists(path: String) {
+        assertThat(Files.exists(Path.of(path))).isFalse()
+    }
+
+    private fun assertFileExists(path: String) {
+        assertThat(Files.exists(Path.of(path))).isTrue()
     }
 }
