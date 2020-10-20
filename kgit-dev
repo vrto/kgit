@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
 
-./gradlew --quiet installDist
+~/Projects/kgit/gradlew --quiet installDist
 
-./build/install/kgit/bin/kgit "$@"
+~/Projects/kgit/build/install/kgit/bin/kgit "$@"
