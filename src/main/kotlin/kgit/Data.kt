@@ -6,6 +6,7 @@ import java.security.MessageDigest
 
 const val KGIT_DIR = ".kgit"
 const val OBJECTS_DIR = ".kgit/objects"
+private const val nullByte = 0.toChar().toByte()
 
 object Data {
 
@@ -13,17 +14,18 @@ object Data {
         Files.createDirectory(Path.of(KGIT_DIR))
     }
 
-    fun hashObject(data: ByteArray): String {
+    fun hashObject(data: ByteArray, type: String): String {
         ensureObjectsDirectory()
 
-        val digest: ByteArray = MessageDigest.getInstance("SHA-1").digest(data)
+        val input =  type.encodeToByteArray() + nullByte + data
+        val digest: ByteArray = MessageDigest.getInstance("SHA-1").digest(input)
 
         // OID is they key in the Object Database
         val oid = digest.joinToString(separator = "") { "%02x".format(it) }
 
         // write actual binary content using the OID
         val obj = Files.createFile(Path.of("$OBJECTS_DIR/$oid"))
-        Files.write(obj, data)
+        Files.write(obj, input)
 
         return oid
     }
@@ -35,8 +37,22 @@ object Data {
         }
     }
 
-    fun getObject(oid: String): String {
+    fun getObject(oid: String, expectedType: String): String {
         val obj = Path.of("$OBJECTS_DIR/$oid")
-        return String(Files.readAllBytes(obj))
+        val allBytes = Files.readAllBytes(obj)
+
+        // null byte separates the type from the content
+        val separatorPos = allBytes.indexOfFirst { it == nullByte }
+
+        val type = String(allBytes.filterIndexed { index, _ -> index < separatorPos }.toByteArray())
+        if (type != expectedType) {
+            throw InvalidTypeException(expected = expectedType, actual = type)
+        }
+
+        // plain content
+        return String(allBytes.filterIndexed { index, _ -> index > separatorPos }.toByteArray())
     }
 }
+
+class InvalidTypeException(expected: String, actual: String)
+    : RuntimeException("Expected $expected, got $actual")
