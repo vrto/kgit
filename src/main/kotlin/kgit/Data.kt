@@ -6,7 +6,12 @@ import java.security.MessageDigest
 
 const val KGIT_DIR = ".kgit"
 const val OBJECTS_DIR = ".kgit/objects"
+
+const val TYPE_BLOB = "blob"
+const val TYPE_TREE = "tree"
+
 private const val nullByte = 0.toChar().toByte()
+
 
 object Data {
 
