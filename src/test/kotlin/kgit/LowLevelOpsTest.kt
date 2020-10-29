@@ -4,6 +4,7 @@ import assertk.assertThat
 import assertk.assertions.isEqualTo
 import assertk.assertions.isFalse
 import assertk.assertions.isTrue
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -13,6 +14,7 @@ import java.nio.file.Path
 class LowLevelOpsTest {
 
     @BeforeEach
+    @AfterEach
     internal fun setUp() {
         Path.of(KGIT_DIR).toFile().deleteRecursively()
     }

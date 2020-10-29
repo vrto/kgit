@@ -10,7 +10,7 @@ import java.nio.file.Path
 import java.nio.file.Paths
 
 fun main(args: Array<String>) {
-    KGitCli().subcommands(Init(), HashObject(), CatFile(), WriteTree()).main(args)
+    KGitCli().subcommands(Init(), HashObject(), CatFile(), WriteTree(), ReadTree()).main(args)
 }
 
 class KGitCli : CliktCommand(help = "Simple Git-like VCS program") {
@@ -53,5 +53,18 @@ class WriteTree : CliktCommand(
 ) {
     override fun run() {
         echo(Base.writeTree())
+    }
+}
+
+class ReadTree : CliktCommand(
+    name = "read-tree",
+    help = "Read the tree structure and write them into the working directory"
+) {
+
+    private val tree: String by argument(help = "Tree OID to read")
+
+    override fun run() {
+        Base.readTree(tree)
+        echo("Tree $tree has been restored into the working directory.")
     }
 }
