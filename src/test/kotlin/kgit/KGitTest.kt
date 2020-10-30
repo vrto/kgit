@@ -95,6 +95,10 @@ class KGitTest {
     private fun modifyCurrentWorkingDirFiles() {
         File("$DYNAMIC_STRUCTURE/flat.txt").writeText("changed content")
         File("$DYNAMIC_STRUCTURE/subdir/nested.txt").writeText("changed nested content")
+        File("$DYNAMIC_STRUCTURE/new_file").apply {
+            require(createNewFile())
+            writeText("new content")
+        }
     }
 
     private fun assertFilesChanged() {
@@ -105,5 +109,6 @@ class KGitTest {
     private fun assertFilesRestored() {
         assertThat(File("$DYNAMIC_STRUCTURE/flat.txt").readText()).isEqualTo("orig content")
         assertThat(File("$DYNAMIC_STRUCTURE/subdir/nested.txt").readText()).isEqualTo("orig nested content")
+        assertThat(File("$DYNAMIC_STRUCTURE/new_file").exists()).isFalse()
     }
 }

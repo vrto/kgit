@@ -1,6 +1,7 @@
 package kgit
 
 import java.io.File
+import java.io.IOException
 
 object Base {
 
@@ -26,10 +27,14 @@ object Base {
     }
 
     fun readTree(treeOid: String, basePath: String = "./") {
+        File(basePath).emptyDir()
         val tree = getTree(treeOid).parseState(basePath)
         tree.forEach {
             val obj = Data.getObject(it.oid, expectedType = TYPE_BLOB)
-            File(it.path).writeText(obj)
+            File(it.path).apply {
+                createNewFileWithinHierarchy()
+                writeText(obj)
+            }
         }
     }
 
@@ -74,3 +79,26 @@ class Tree(private val entries: List<Entry>) : Iterable<Tree.Entry> {
 fun List<Tree.Entry>.toTree() = Tree(this)
 
 private fun File.isIgnored(): Boolean = this.path.contains(KGIT_DIR)
+
+private fun File.createNewFileWithinHierarchy() =
+    try {
+        createNewFile()
+    } catch (e: IOException) {
+        parentFile.mkdirs()
+        createNewFile()
+    }
+
+private fun File.emptyDir() {
+    // delete all files
+    this.walk()
+        .filter { !it.isIgnored() }
+        .filter { it.isFile }
+        .forEach { it.delete() }
+
+    // clean up dirs & subdirs
+    this.walk()
+        .filter { !it.isIgnored() }
+        .filter { it.isDirectory }
+        .filter { it.path != this.path } // no self-delete
+        .forEach { it.delete() }
+}
