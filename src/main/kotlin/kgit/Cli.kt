@@ -5,16 +5,20 @@ import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.option
+import com.github.ajalt.clikt.parameters.options.required
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 
 fun main(args: Array<String>) {
-    KGitCli().subcommands(Init(), HashObject(), CatFile(), WriteTree(), ReadTree()).main(args)
+    KGitCli()
+        .subcommands(Init(), HashObject(), CatFile(), WriteTree(), ReadTree(), CommitCmd())
+        .main(args)
 }
 
 class KGitCli : CliktCommand(help = "Simple Git-like VCS program") {
-    override fun run() {/*wrapper command*/
+    override fun run() {
+        /*wrapper command*/
     }
 }
 
@@ -66,5 +70,18 @@ class ReadTree : CliktCommand(
     override fun run() {
         Base.readTree(tree)
         echo("Tree $tree has been restored into the working directory.")
+    }
+}
+
+class CommitCmd : CliktCommand(
+    name = "commit",
+    help = "Create a new commit"
+) {
+
+    private val message: String by option("-m", "--message").required()
+
+    override fun run() {
+        val commitId = Base.commit(message)
+        echo(commitId)
     }
 }

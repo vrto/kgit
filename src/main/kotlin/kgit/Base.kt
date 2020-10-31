@@ -47,8 +47,16 @@ object Base {
             Tree.Entry(type = parts[0], oid = parts[1], name = parts[2])
         }.toTree()
     }
+
+    //TODO ditch stringly typed OIDs
+    fun commit(message: String, directory: String = "."): String {
+        val treeOid = writeTree(directory)
+        val commit = Commit(treeOid, message)
+        return Data.hashObject(commit.toString().encodeToByteArray(), TYPE_COMMIT)
+    }
 }
 
+// TODO move tree to a separate file
 class Tree(private val entries: List<Entry>) : Iterable<Tree.Entry> {
 
     class Entry(val type: String, val oid: String, val name: String) {
@@ -78,6 +86,16 @@ class Tree(private val entries: List<Entry>) : Iterable<Tree.Entry> {
 
 fun List<Tree.Entry>.toTree() = Tree(this)
 
+//TODO separate file
+data class Commit(val treeOid: String, val message: String) {
+    override fun toString() =
+        """tree $treeOid
+        |
+        |$message
+        """.trimMargin()
+}
+
+//TODO Separate to file extensions
 private fun File.isIgnored(): Boolean = this.path.contains(KGIT_DIR)
 
 private fun File.createNewFileWithinHierarchy() =

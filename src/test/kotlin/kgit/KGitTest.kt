@@ -1,5 +1,6 @@
 package kgit
 
+import assertk.assertAll
 import assertk.assertThat
 import assertk.assertions.*
 import org.junit.jupiter.api.AfterEach
@@ -32,12 +33,14 @@ class KGitTest {
         val lines = content.split("\n")
         assertThat(lines).hasSize(3)
 
-        assertThat(lines[0]).contains("blob")
-        assertThat(lines[0]).contains("cats.txt")
-        assertThat(lines[1]).contains("tree")
-        assertThat(lines[1]).contains("other")
-        assertThat(lines[2]).contains("blob")
-        assertThat(lines[2]).contains("dogs.txt")
+        assertAll {
+            assertThat(lines[0]).contains("blob")
+            assertThat(lines[0]).contains("cats.txt")
+            assertThat(lines[1]).contains("tree")
+            assertThat(lines[1]).contains("other")
+            assertThat(lines[2]).contains("blob")
+            assertThat(lines[2]).contains("dogs.txt")
+        }
     }
 
     @Test
@@ -59,6 +62,24 @@ class KGitTest {
         assertFilesChanged()
         Base.readTree(treeOid, basePath = "$DYNAMIC_STRUCTURE/")
         assertFilesRestored()
+    }
+
+    //TODO restructure tests to use nested classes
+    @Test
+    fun `should create a commit`() {
+        val oid = Base.commit(
+            message = "Test commit",
+            directory = "src/test/resources/test-structure") //TODO promote to constant
+
+        val content = Data.getObject(oid, expectedType = TYPE_COMMIT)
+        val lines = content.split("\n")
+        assertThat(lines).hasSize(3)
+
+        assertAll {
+            assertThat(lines[0]).contains("tree")
+            assertThat(lines[1]).isEmpty()
+            assertThat(lines[2]).isEqualTo("Test commit")
+        }
     }
 
     private fun writeStaticTestStructure(): String {

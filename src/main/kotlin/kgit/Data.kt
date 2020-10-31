@@ -9,6 +9,7 @@ const val OBJECTS_DIR = ".kgit/objects"
 
 const val TYPE_BLOB = "blob"
 const val TYPE_TREE = "tree"
+const val TYPE_COMMIT = "commit"
 
 private const val nullByte = 0.toChar().toByte()
 
