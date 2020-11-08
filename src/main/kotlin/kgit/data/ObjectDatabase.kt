@@ -13,7 +13,7 @@ const val TYPE_COMMIT = "commit"
 
 private const val nullByte = 0.toChar().toByte()
 
-object ObjectDatabase {
+class ObjectDatabase {
 
     fun init() {
         Files.createDirectory(Path.of(KGIT_DIR))

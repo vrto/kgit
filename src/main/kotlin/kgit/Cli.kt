@@ -15,6 +15,9 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 
+val objectDb = ObjectDatabase()
+val kgit = KGit(objectDb)
+
 fun main(args: Array<String>) {
     KGitCli()
         .subcommands(Init(), HashObject(), CatFile(), WriteTree(), ReadTree(), CommitCmd())
@@ -29,7 +32,7 @@ class KGitCli : CliktCommand(help = "Simple Git-like VCS program") {
 
 class Init : CliktCommand(help = "Initialize kgit repository") {
     override fun run() {
-        ObjectDatabase.init()
+        objectDb.init()
         echo("Initialized empty kgit repository in ${Paths.get(".").toAbsolutePath().normalize()}/$KGIT_DIR")
     }
 }
@@ -41,7 +44,7 @@ class HashObject : CliktCommand(name = "hash-object", help = "Store an arbitrary
 
     override fun run() {
         val data = Files.readAllBytes(Path.of(fileName))
-        val oid = ObjectDatabase.hashObject(data, type)
+        val oid = objectDb.hashObject(data, type)
         echo(oid)
     }
 }
@@ -52,7 +55,7 @@ class CatFile : CliktCommand(name = "cat-file", help = "Print hashed object") {
     private val expected: String by option(help = "expected type to match").default(TYPE_BLOB)
 
     override fun run() {
-        echo(ObjectDatabase.getObject(Oid(oid), expected))
+        echo(objectDb.getObject(Oid(oid), expected))
     }
 }
 
@@ -61,7 +64,7 @@ class WriteTree : CliktCommand(
     help = "Recursively write directory with its contents into the Object Database"
 ) {
     override fun run() {
-        echo(KGit.writeTree())
+        echo(kgit.writeTree())
     }
 }
 
@@ -73,7 +76,7 @@ class ReadTree : CliktCommand(
     private val tree: String by argument(help = "Tree OID to read")
 
     override fun run() {
-        KGit.readTree(Oid(tree))
+        kgit.readTree(Oid(tree))
         echo("Tree $tree has been restored into the working directory.")
     }
 }
@@ -86,7 +89,7 @@ class CommitCmd : CliktCommand(
     private val message: String by option("-m", "--message").required()
 
     override fun run() {
-        val commitId = KGit.commit(message)
+        val commitId = kgit.commit(message)
         echo(commitId)
     }
 }

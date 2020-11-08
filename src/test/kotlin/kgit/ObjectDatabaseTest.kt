@@ -17,6 +17,8 @@ import java.nio.file.Path
 
 class ObjectDatabaseTest {
 
+    val objectDb = ObjectDatabase()
+
     @BeforeEach
     @AfterEach
     internal fun setUp() {
@@ -27,7 +29,7 @@ class ObjectDatabaseTest {
     fun `init creates a new directory`() {
         assertFileDoesNotExists(KGIT_DIR)
 
-        ObjectDatabase.init()
+        objectDb.init()
 
         assertFileExists(KGIT_DIR)
     }
@@ -35,9 +37,9 @@ class ObjectDatabaseTest {
     @Test
     fun `hashObject stores an object and returns an OID`() {
         assertFileDoesNotExists("$KGIT_DIR/objects")
-        ObjectDatabase.init()
+        objectDb.init()
 
-        val oid = ObjectDatabase.hashObject("sample data".toByteArray(), TYPE_BLOB)
+        val oid = objectDb.hashObject("sample data".toByteArray(), TYPE_BLOB)
         assertThat(oid.value.length).isEqualTo(40)
 
         assertFileExists("$KGIT_DIR/objects/$oid")
@@ -45,23 +47,23 @@ class ObjectDatabaseTest {
 
     @Test
     fun `getObject prints an object using the given OID`() {
-        ObjectDatabase.init()
+        objectDb.init()
         val originalContent = "sample object"
-        val oid = ObjectDatabase.hashObject(originalContent.toByteArray(), TYPE_BLOB)
+        val oid = objectDb.hashObject(originalContent.toByteArray(), TYPE_BLOB)
 
-        val content = ObjectDatabase.getObject(oid, expectedType = TYPE_BLOB)
+        val content = objectDb.getObject(oid, expectedType = TYPE_BLOB)
 
         assertThat(content).isEqualTo(originalContent)
     }
 
     @Test
     fun `getObject throws an error if the given type doesn't match`() {
-        ObjectDatabase.init()
+        objectDb.init()
         val originalContent = "sample object"
-        val oid = ObjectDatabase.hashObject(originalContent.toByteArray(), type = "other")
+        val oid = objectDb.hashObject(originalContent.toByteArray(), type = "other")
 
         assertThrows<InvalidTypeException> {
-            ObjectDatabase.getObject(oid = oid, expectedType = TYPE_BLOB)
+            objectDb.getObject(oid = oid, expectedType = TYPE_BLOB)
         }
     }
 

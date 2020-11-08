@@ -17,9 +17,12 @@ class KGitTest {
     private val DYNAMIC_STRUCTURE = "src/test/resources/dynamic-structure"
     private val STATIC_STRUCTURE = "src/test/resources/test-structure"
 
+    private val objectDb = ObjectDatabase()
+    private val kgit = KGit(objectDb)
+
     @BeforeEach
     fun createKgitDir() {
-        ObjectDatabase.init()
+        objectDb.init()
     }
 
     @BeforeEach
@@ -36,7 +39,7 @@ class KGitTest {
         fun `should write tree`() {
             val treeOid = writeStaticTestStructure()
 
-            val content = ObjectDatabase.getObject(treeOid, TYPE_TREE)
+            val content = objectDb.getObject(treeOid, TYPE_TREE)
             val lines = content.split("\n")
             assertThat(lines).hasSize(3)
 
@@ -54,7 +57,7 @@ class KGitTest {
         fun `should get an already saved tree`() {
             val treeOid = writeStaticTestStructure()
 
-            val tree = KGit.getTree(treeOid).parseState(basePath = "./")
+            val tree = kgit.getTree(treeOid).parseState(basePath = "./", kgit::getTree)
 
             assertThat(tree.size).isEqualTo(3)
             assertThat(tree).extracting { it.path }.containsOnly("./cats.txt", "./dogs.txt", "./other/shoes.txt")
@@ -67,14 +70,14 @@ class KGitTest {
             modifyCurrentWorkingDirFiles()
 
             assertFilesChanged()
-            KGit.readTree(treeOid, basePath = "$DYNAMIC_STRUCTURE/")
+            kgit.readTree(treeOid, basePath = "$DYNAMIC_STRUCTURE/")
             assertFilesRestored()
         }
 
         private fun writeStaticTestStructure(): Oid {
             val dirToWrite = File(STATIC_STRUCTURE)
             assertThat(dirToWrite.exists()).isTrue()
-            return KGit.writeTree(directory = dirToWrite.absolutePath)
+            return kgit.writeTree(directory = dirToWrite.absolutePath)
         }
 
         private fun writeDynamicTestStructure(): Oid {
@@ -99,7 +102,7 @@ class KGitTest {
                 writeText("orig nested content")
             }
 
-            return KGit.writeTree(directory = dirToWrite.absolutePath)
+            return kgit.writeTree(directory = dirToWrite.absolutePath)
         }
 
         private fun modifyCurrentWorkingDirFiles() {
@@ -128,12 +131,12 @@ class KGitTest {
 
         @Test
         fun `should create a commit`() {
-            val oid = KGit.commit(
+            val oid = kgit.commit(
                 message = "Test commit",
                 directory = STATIC_STRUCTURE
             )
 
-            val content = ObjectDatabase.getObject(oid, expectedType = TYPE_COMMIT)
+            val content = objectDb.getObject(oid, expectedType = TYPE_COMMIT)
             val lines = content.split("\n")
             assertThat(lines).hasSize(3)
 

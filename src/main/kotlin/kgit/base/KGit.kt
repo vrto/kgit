@@ -3,7 +3,7 @@ package kgit.base
 import kgit.data.*
 import java.io.File
 
-object KGit {
+class KGit(private val objectDb: ObjectDatabase) {
 
     fun writeTree(directory: String = "."): Oid {
         val children = File(directory).listFiles()!!
@@ -16,21 +16,21 @@ object KGit {
                         Tree.Entry(TYPE_TREE, oid, it.name)
                     }
                     else -> {
-                        val oid = ObjectDatabase.hashObject(it.readBytes(), TYPE_BLOB)
+                        val oid = objectDb.hashObject(it.readBytes(), TYPE_BLOB)
                         Tree.Entry(TYPE_BLOB, oid, it.name)
                     }
                 }
             }.toTree()
 
         val rawBytes = tree.toString().encodeToByteArray()
-        return ObjectDatabase.hashObject(rawBytes, TYPE_TREE)
+        return objectDb.hashObject(rawBytes, TYPE_TREE)
     }
 
     fun readTree(treeOid: Oid, basePath: String = "./") {
         File(basePath).emptyDir()
-        val tree = getTree(treeOid).parseState(basePath)
+        val tree = getTree(treeOid).parseState(basePath, ::getTree)
         tree.forEach {
-            val obj = ObjectDatabase.getObject(it.oid, expectedType = TYPE_BLOB)
+            val obj = objectDb.getObject(it.oid, expectedType = TYPE_BLOB)
             File(it.path).apply {
                 createNewFileWithinHierarchy()
                 writeText(obj)
@@ -39,7 +39,7 @@ object KGit {
     }
 
     internal fun getTree(oid: Oid): Tree {
-        val rawTree = ObjectDatabase.getObject(oid, expectedType = TYPE_TREE)
+        val rawTree = objectDb.getObject(oid, expectedType = TYPE_TREE)
         val lines = rawTree.split("\n")
         return lines.map {
             val parts = it.split(" ")
@@ -51,6 +51,6 @@ object KGit {
     fun commit(message: String, directory: String = "."): Oid {
         val treeOid = writeTree(directory)
         val commit = Commit(treeOid, message)
-        return ObjectDatabase.hashObject(commit.toString().encodeToByteArray(), TYPE_COMMIT)
+        return objectDb.hashObject(commit.toString().encodeToByteArray(), TYPE_COMMIT)
     }
 }

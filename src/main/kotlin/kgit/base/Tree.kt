@@ -17,11 +17,11 @@ class Tree(private val entries: List<Entry>) : Iterable<Tree.Entry> {
 
     class FileState(val path: String, val oid: Oid)
 
-    fun parseState(basePath: String): List<FileState> = entries.map { entry ->
+    fun parseState(basePath: String, treeLoader: (Oid) -> Tree): List<FileState> = entries.map { entry ->
         val path = basePath + entry.name
         when (entry.type) {
             TYPE_BLOB -> listOf(FileState(path, entry.oid))
-            TYPE_TREE -> KGit.getTree(entry.oid).parseState("$path/")
+            TYPE_TREE -> treeLoader(entry.oid).parseState("$path/", treeLoader)
             else -> throw IllegalStateException("Unknown object type ${entry.type}")
         }
     }.flatten()
