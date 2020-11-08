@@ -3,6 +3,11 @@ package kgit
 import assertk.assertAll
 import assertk.assertThat
 import assertk.assertions.*
+import kgit.base.KGit
+import kgit.data.KGIT_DIR
+import kgit.data.ObjectDatabase
+import kgit.data.TYPE_COMMIT
+import kgit.data.TYPE_TREE
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -15,7 +20,7 @@ class KGitTest {
 
     @BeforeEach
     fun createKgitDir() {
-        Data.init()
+        ObjectDatabase.init()
     }
 
     @BeforeEach
@@ -29,7 +34,7 @@ class KGitTest {
     fun `should write tree`() {
         val treeOid = writeStaticTestStructure()
 
-        val content = Data.getObject(treeOid, TYPE_TREE)
+        val content = ObjectDatabase.getObject(treeOid, TYPE_TREE)
         val lines = content.split("\n")
         assertThat(lines).hasSize(3)
 
@@ -47,7 +52,7 @@ class KGitTest {
     fun `should get an already saved tree`() {
         val treeOid = writeStaticTestStructure()
 
-        val tree = Base.getTree(treeOid).parseState(basePath = "./")
+        val tree = KGit.getTree(treeOid).parseState(basePath = "./")
 
         assertThat(tree.size).isEqualTo(3)
         assertThat(tree).extracting { it.path }.containsOnly("./cats.txt", "./dogs.txt", "./other/shoes.txt")
@@ -60,18 +65,18 @@ class KGitTest {
         modifyCurrentWorkingDirFiles()
 
         assertFilesChanged()
-        Base.readTree(treeOid, basePath = "$DYNAMIC_STRUCTURE/")
+        KGit.readTree(treeOid, basePath = "$DYNAMIC_STRUCTURE/")
         assertFilesRestored()
     }
 
     //TODO restructure tests to use nested classes
     @Test
     fun `should create a commit`() {
-        val oid = Base.commit(
+        val oid = KGit.commit(
             message = "Test commit",
             directory = "src/test/resources/test-structure") //TODO promote to constant
 
-        val content = Data.getObject(oid, expectedType = TYPE_COMMIT)
+        val content = ObjectDatabase.getObject(oid, expectedType = TYPE_COMMIT)
         val lines = content.split("\n")
         assertThat(lines).hasSize(3)
 
@@ -85,7 +90,7 @@ class KGitTest {
     private fun writeStaticTestStructure(): String {
         val dirToWrite = File("src/test/resources/test-structure")
         assertThat(dirToWrite.exists()).isTrue()
-        return Base.writeTree(directory = dirToWrite.absolutePath)
+        return KGit.writeTree(directory = dirToWrite.absolutePath)
     }
 
     private fun writeDynamicTestStructure(): String {
@@ -110,7 +115,7 @@ class KGitTest {
             writeText("orig nested content")
         }
 
-        return Base.writeTree(directory = dirToWrite.absolutePath)
+        return KGit.writeTree(directory = dirToWrite.absolutePath)
     }
 
     private fun modifyCurrentWorkingDirFiles() {

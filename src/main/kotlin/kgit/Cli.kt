@@ -6,6 +6,10 @@ import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
+import kgit.base.KGit
+import kgit.data.KGIT_DIR
+import kgit.data.ObjectDatabase
+import kgit.data.TYPE_BLOB
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -24,7 +28,7 @@ class KGitCli : CliktCommand(help = "Simple Git-like VCS program") {
 
 class Init : CliktCommand(help = "Initialize kgit repository") {
     override fun run() {
-        Data.init()
+        ObjectDatabase.init()
         echo("Initialized empty kgit repository in ${Paths.get(".").toAbsolutePath().normalize()}/$KGIT_DIR")
     }
 }
@@ -36,7 +40,7 @@ class HashObject : CliktCommand(name = "hash-object", help = "Store an arbitrary
 
     override fun run() {
         val data = Files.readAllBytes(Path.of(fileName))
-        val oid = Data.hashObject(data, type)
+        val oid = ObjectDatabase.hashObject(data, type)
         echo(oid)
     }
 }
@@ -47,7 +51,7 @@ class CatFile : CliktCommand(name = "cat-file", help = "Print hashed object") {
     private val expected: String by option(help = "expected type to match").default(TYPE_BLOB)
 
     override fun run() {
-        echo(Data.getObject(oid, expected))
+        echo(ObjectDatabase.getObject(oid, expected))
     }
 }
 
@@ -56,7 +60,7 @@ class WriteTree : CliktCommand(
     help = "Recursively write directory with its contents into the Object Database"
 ) {
     override fun run() {
-        echo(Base.writeTree())
+        echo(KGit.writeTree())
     }
 }
 
@@ -68,7 +72,7 @@ class ReadTree : CliktCommand(
     private val tree: String by argument(help = "Tree OID to read")
 
     override fun run() {
-        Base.readTree(tree)
+        KGit.readTree(tree)
         echo("Tree $tree has been restored into the working directory.")
     }
 }
@@ -81,7 +85,7 @@ class CommitCmd : CliktCommand(
     private val message: String by option("-m", "--message").required()
 
     override fun run() {
-        val commitId = Base.commit(message)
+        val commitId = KGit.commit(message)
         echo(commitId)
     }
 }

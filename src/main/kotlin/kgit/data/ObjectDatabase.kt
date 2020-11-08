@@ -1,4 +1,4 @@
-package kgit
+package kgit.data
 
 import java.nio.file.Files
 import java.nio.file.Path
@@ -13,8 +13,7 @@ const val TYPE_COMMIT = "commit"
 
 private const val nullByte = 0.toChar().toByte()
 
-
-object Data {
+object ObjectDatabase {
 
     fun init() {
         Files.createDirectory(Path.of(KGIT_DIR))

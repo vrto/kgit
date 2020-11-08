@@ -1,0 +1,33 @@
+package kgit.base
+
+import kgit.data.TYPE_BLOB
+import kgit.data.TYPE_TREE
+
+class Tree(private val entries: List<Entry>) : Iterable<Tree.Entry> {
+
+    class Entry(val type: String, val oid: String, val name: String) {
+        init {
+            require(!name.contains('/'))
+            require(name !in (listOf(".", "..")))
+        }
+
+        override fun toString() = "$type $oid $name"
+    }
+
+    class FileState(val path: String, val oid: String)
+
+    fun parseState(basePath: String): List<FileState> = entries.map { entry ->
+        val path = basePath + entry.name
+        when (entry.type) {
+            TYPE_BLOB -> listOf(FileState(path, entry.oid))
+            TYPE_TREE -> KGit.getTree(entry.oid).parseState("$path/")
+            else -> throw IllegalStateException("Unknown object type ${entry.type}")
+        }
+    }.flatten()
+
+    override fun toString() = entries.joinToString(separator = "\n") { it.toString() }
+
+    override fun iterator() = entries.iterator()
+}
+
+fun List<Tree.Entry>.toTree() = Tree(this)
