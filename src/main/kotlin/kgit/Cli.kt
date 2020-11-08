@@ -9,6 +9,7 @@ import com.github.ajalt.clikt.parameters.options.required
 import kgit.base.KGit
 import kgit.data.KGIT_DIR
 import kgit.data.ObjectDatabase
+import kgit.data.Oid
 import kgit.data.TYPE_BLOB
 import java.nio.file.Files
 import java.nio.file.Path
@@ -51,7 +52,7 @@ class CatFile : CliktCommand(name = "cat-file", help = "Print hashed object") {
     private val expected: String by option(help = "expected type to match").default(TYPE_BLOB)
 
     override fun run() {
-        echo(ObjectDatabase.getObject(oid, expected))
+        echo(ObjectDatabase.getObject(Oid(oid), expected))
     }
 }
 
@@ -72,7 +73,7 @@ class ReadTree : CliktCommand(
     private val tree: String by argument(help = "Tree OID to read")
 
     override fun run() {
-        KGit.readTree(tree)
+        KGit.readTree(Oid(tree))
         echo("Tree $tree has been restored into the working directory.")
     }
 }

@@ -4,10 +4,7 @@ import assertk.assertAll
 import assertk.assertThat
 import assertk.assertions.*
 import kgit.base.KGit
-import kgit.data.KGIT_DIR
-import kgit.data.ObjectDatabase
-import kgit.data.TYPE_COMMIT
-import kgit.data.TYPE_TREE
+import kgit.data.*
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -74,13 +71,13 @@ class KGitTest {
             assertFilesRestored()
         }
 
-        private fun writeStaticTestStructure(): String {
+        private fun writeStaticTestStructure(): Oid {
             val dirToWrite = File(STATIC_STRUCTURE)
             assertThat(dirToWrite.exists()).isTrue()
             return KGit.writeTree(directory = dirToWrite.absolutePath)
         }
 
-        private fun writeDynamicTestStructure(): String {
+        private fun writeDynamicTestStructure(): Oid {
             // desired state:
             // ./dynamic-structure
             // ./dynamic-structure/flat.txt

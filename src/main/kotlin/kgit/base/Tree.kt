@@ -1,11 +1,12 @@
 package kgit.base
 
+import kgit.data.Oid
 import kgit.data.TYPE_BLOB
 import kgit.data.TYPE_TREE
 
 class Tree(private val entries: List<Entry>) : Iterable<Tree.Entry> {
 
-    class Entry(val type: String, val oid: String, val name: String) {
+    class Entry(val type: String, val oid: Oid, val name: String) {
         init {
             require(!name.contains('/'))
             require(name !in (listOf(".", "..")))
@@ -14,7 +15,7 @@ class Tree(private val entries: List<Entry>) : Iterable<Tree.Entry> {
         override fun toString() = "$type $oid $name"
     }
 
-    class FileState(val path: String, val oid: String)
+    class FileState(val path: String, val oid: Oid)
 
     fun parseState(basePath: String): List<FileState> = entries.map { entry ->
         val path = basePath + entry.name

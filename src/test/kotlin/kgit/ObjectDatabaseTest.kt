@@ -38,7 +38,7 @@ class ObjectDatabaseTest {
         ObjectDatabase.init()
 
         val oid = ObjectDatabase.hashObject("sample data".toByteArray(), TYPE_BLOB)
-        assertThat(oid.length).isEqualTo(40)
+        assertThat(oid.value.length).isEqualTo(40)
 
         assertFileExists("$KGIT_DIR/objects/$oid")
     }

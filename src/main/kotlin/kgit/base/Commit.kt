@@ -1,6 +1,8 @@
 package kgit.base
 
-data class Commit(val treeOid: String, val message: String) {
+import kgit.data.Oid
+
+data class Commit(val treeOid: Oid, val message: String) {
     override fun toString() =
         """tree $treeOid
         |

@@ -19,7 +19,7 @@ object ObjectDatabase {
         Files.createDirectory(Path.of(KGIT_DIR))
     }
 
-    fun hashObject(data: ByteArray, type: String): String {
+    fun hashObject(data: ByteArray, type: String): Oid {
         ensureObjectsDirectory()
 
         val input =  type.encodeToByteArray() + nullByte + data
@@ -32,7 +32,7 @@ object ObjectDatabase {
         val obj = Files.createFile(Path.of("$OBJECTS_DIR/$oid"))
         Files.write(obj, input)
 
-        return oid
+        return Oid(oid)
     }
 
     private fun ensureObjectsDirectory() {
@@ -42,7 +42,7 @@ object ObjectDatabase {
         }
     }
 
-    fun getObject(oid: String, expectedType: String): String {
+    fun getObject(oid: Oid, expectedType: String): String {
         val obj = Path.of("$OBJECTS_DIR/$oid")
         val allBytes = Files.readAllBytes(obj)
 
@@ -61,3 +61,7 @@ object ObjectDatabase {
 
 class InvalidTypeException(expected: String, actual: String)
     : RuntimeException("Expected $expected, got $actual")
+
+inline class Oid(val value: String) {
+    override fun toString() = value
+}

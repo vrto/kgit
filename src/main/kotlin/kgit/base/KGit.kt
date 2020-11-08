@@ -1,14 +1,11 @@
 package kgit.base
 
-import kgit.data.ObjectDatabase
-import kgit.data.TYPE_BLOB
-import kgit.data.TYPE_COMMIT
-import kgit.data.TYPE_TREE
+import kgit.data.*
 import java.io.File
 
 object KGit {
 
-    fun writeTree(directory: String = "."): String {
+    fun writeTree(directory: String = "."): Oid {
         val children = File(directory).listFiles()!!
         val tree = children
             .filterNot { it.isIgnored() }
@@ -29,7 +26,7 @@ object KGit {
         return ObjectDatabase.hashObject(rawBytes, TYPE_TREE)
     }
 
-    fun readTree(treeOid: String, basePath: String = "./") {
+    fun readTree(treeOid: Oid, basePath: String = "./") {
         File(basePath).emptyDir()
         val tree = getTree(treeOid).parseState(basePath)
         tree.forEach {
@@ -41,18 +38,17 @@ object KGit {
         }
     }
 
-    internal fun getTree(oid: String): Tree {
+    internal fun getTree(oid: Oid): Tree {
         val rawTree = ObjectDatabase.getObject(oid, expectedType = TYPE_TREE)
         val lines = rawTree.split("\n")
         return lines.map {
             val parts = it.split(" ")
             require(parts.size == 3)
-            Tree.Entry(type = parts[0], oid = parts[1], name = parts[2])
+            Tree.Entry(type = parts[0], oid = Oid(parts[1]), name = parts[2])
         }.toTree()
     }
 
-    //TODO ditch stringly typed OIDs
-    fun commit(message: String, directory: String = "."): String {
+    fun commit(message: String, directory: String = "."): Oid {
         val treeOid = writeTree(directory)
         val commit = Commit(treeOid, message)
         return ObjectDatabase.hashObject(commit.toString().encodeToByteArray(), TYPE_COMMIT)
