@@ -4,14 +4,12 @@ import assertk.assertThat
 import assertk.assertions.isEqualTo
 import assertk.assertions.isFalse
 import assertk.assertions.isTrue
-import kgit.data.InvalidTypeException
-import kgit.data.KGIT_DIR
-import kgit.data.ObjectDatabase
-import kgit.data.TYPE_BLOB
+import kgit.data.*
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
 
@@ -65,6 +63,17 @@ class ObjectDatabaseTest {
         assertThrows<InvalidTypeException> {
             objectDb.getObject(oid = oid, expectedType = TYPE_BLOB)
         }
+    }
+
+    @Test
+    fun `setHead stores the OID into HEAD`() {
+        objectDb.init()
+        val oid = objectDb.hashObject("sample data".toByteArray(), TYPE_BLOB)
+
+        objectDb.setHead(oid)
+
+        assertFileExists(HEAD_DIR)
+        assertThat(File(HEAD_DIR).readText().toOid()).isEqualTo(oid)
     }
 
     private fun assertFileDoesNotExists(path: String) {

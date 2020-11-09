@@ -51,6 +51,8 @@ class KGit(private val objectDb: ObjectDatabase) {
     fun commit(message: String, directory: String = "."): Oid {
         val treeOid = writeTree(directory)
         val commit = Commit(treeOid, message)
-        return objectDb.hashObject(commit.toString().encodeToByteArray(), TYPE_COMMIT)
+        return objectDb.hashObject(commit.toString().encodeToByteArray(), TYPE_COMMIT).also {
+            objectDb.setHead(it)
+        }
     }
 }

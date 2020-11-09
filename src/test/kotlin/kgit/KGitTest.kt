@@ -145,6 +145,8 @@ class KGitTest {
                 assertThat(lines[1]).isEmpty()
                 assertThat(lines[2]).isEqualTo("Test commit")
             }
+
+            assertThat(File(HEAD_DIR).readText().toOid()).isEqualTo(oid)
         }
     }
 

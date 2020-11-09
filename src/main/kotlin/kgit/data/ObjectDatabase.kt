@@ -1,11 +1,13 @@
 package kgit.data
 
+import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
 import java.security.MessageDigest
 
 const val KGIT_DIR = ".kgit"
 const val OBJECTS_DIR = ".kgit/objects"
+const val HEAD_DIR = ".kgit/HEAD"
 
 const val TYPE_BLOB = "blob"
 const val TYPE_TREE = "tree"
@@ -57,6 +59,10 @@ class ObjectDatabase {
         // plain content
         return String(allBytes.filterIndexed { index, _ -> index > separatorPos }.toByteArray())
     }
+
+    fun setHead(oid: Oid) {
+        File(HEAD_DIR).writeText(oid.value)
+    }
 }
 
 class InvalidTypeException(expected: String, actual: String)
@@ -65,3 +71,5 @@ class InvalidTypeException(expected: String, actual: String)
 inline class Oid(val value: String) {
     override fun toString() = value
 }
+
+fun String.toOid() = Oid(this)
