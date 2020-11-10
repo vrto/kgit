@@ -31,8 +31,7 @@ class ObjectDatabase {
         val oid = digest.joinToString(separator = "") { "%02x".format(it) }
 
         // write actual binary content using the OID
-        val obj = Files.createFile(Path.of("$OBJECTS_DIR/$oid"))
-        Files.write(obj, input)
+        File("$OBJECTS_DIR/$oid").writeBytes(input)
 
         return Oid(oid)
     }
@@ -62,6 +61,14 @@ class ObjectDatabase {
 
     fun setHead(oid: Oid) {
         File(HEAD_DIR).writeText(oid.value)
+    }
+
+    fun getHead(): Oid? {
+        val head = File(HEAD_DIR)
+        return when {
+            head.exists() -> head.readText().toOid()
+            else -> null
+        }
     }
 }
 

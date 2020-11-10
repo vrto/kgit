@@ -130,7 +130,7 @@ class KGitTest {
     inner class Commits {
 
         @Test
-        fun `should create a commit`() {
+        fun `should create a first commit`() {
             val oid = kgit.commit(
                 message = "Test commit",
                 directory = STATIC_STRUCTURE
@@ -147,6 +147,32 @@ class KGitTest {
             }
 
             assertThat(File(HEAD_DIR).readText().toOid()).isEqualTo(oid)
+        }
+
+        @Test
+        fun `should link commits together`() {
+            val parent = kgit.commit(
+                message = "Test commit 1",
+                directory = STATIC_STRUCTURE
+            )
+
+            val head = kgit.commit(
+                message = "Test commit 2",
+                directory = STATIC_STRUCTURE
+            )
+
+            val content = objectDb.getObject(head, expectedType = TYPE_COMMIT)
+            val lines = content.split("\n")
+            assertThat(lines).hasSize(4)
+
+            assertAll {
+                assertThat(lines[0]).contains("tree")
+                assertThat(lines[1]).isEqualTo("parent $parent")
+                assertThat(lines[2]).isEmpty()
+                assertThat(lines[3]).isEqualTo("Test commit 2")
+            }
+
+            assertThat(File(HEAD_DIR).readText().toOid()).isEqualTo(head)
         }
     }
 
