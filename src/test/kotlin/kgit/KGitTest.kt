@@ -174,6 +174,40 @@ class KGitTest {
 
             assertThat(File(HEAD_DIR).readText().toOid()).isEqualTo(head)
         }
-    }
 
+        @Test
+        fun `should get the first commit`() {
+            val oid = kgit.commit(
+                message = "Test commit",
+                directory = STATIC_STRUCTURE
+            )
+
+            val commit = kgit.getCommit(oid)
+            with (commit) {
+                assertThat(treeOid).isNotNull()
+                assertThat(parentOid).isNull()
+                assertThat(message).isEqualTo("Test commit")
+            }
+        }
+
+        @Test
+        fun `should get a commit with parent`() {
+            val parentOid = kgit.commit(
+                message = "Parent mesg",
+                directory = STATIC_STRUCTURE
+            )
+
+            val headOid = kgit.commit(
+                message = "Head msg",
+                directory = STATIC_STRUCTURE
+            )
+
+            val commit = kgit.getCommit(headOid)
+            with (commit) {
+                assertThat(treeOid).isNotNull()
+                assertThat(parentOid).isEqualTo(parentOid)
+                assertThat(message).isEqualTo("Head msg")
+            }
+        }
+    }
 }

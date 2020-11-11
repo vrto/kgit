@@ -6,6 +6,7 @@ import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
+import kgit.base.Commit
 import kgit.base.KGit
 import kgit.data.KGIT_DIR
 import kgit.data.ObjectDatabase
@@ -20,7 +21,7 @@ val kgit = KGit(objectDb)
 
 fun main(args: Array<String>) {
     KGitCli()
-        .subcommands(Init(), HashObject(), CatFile(), WriteTree(), ReadTree(), CommitCmd())
+        .subcommands(Init(), HashObject(), CatFile(), WriteTree(), ReadTree(), CommitCmd(), Log())
         .main(args)
 }
 
@@ -91,5 +92,22 @@ class CommitCmd : CliktCommand(
     override fun run() {
         val commitId = kgit.commit(message)
         echo(commitId)
+    }
+}
+
+class Log : CliktCommand(help = "Walk the list of commits and print them") {
+    override fun run() {
+        var oid = objectDb.getHead()
+        while (oid != null) {
+            val commit = kgit.getCommit(oid)
+            commit.prettyPrint(oid)
+            oid = commit.parentOid
+        }
+    }
+
+    private fun Commit.prettyPrint(oid: Oid) {
+        println("commit $oid")
+        println("\t$message")
+        println("")
     }
 }

@@ -56,4 +56,16 @@ class KGit(private val objectDb: ObjectDatabase) {
             objectDb.setHead(it)
         }
     }
+
+    fun getCommit(oid: Oid): Commit {
+        val raw = objectDb.getObject(oid, TYPE_COMMIT)
+        val lines = raw.split("\n")
+            .filter { it.isNotEmpty() } // empty lines are just readability
+
+        val treeOid = lines.first { it.startsWith("tree") }.drop("tree ".length).toOid()
+        val parentOid = lines.find { it.startsWith("parent") }?.drop("parent ".length)?.toOid()
+        val msg = lines.last()
+
+        return Commit(treeOid, parentOid, msg)
+    }
 }
