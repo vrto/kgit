@@ -175,7 +175,7 @@ class KGitTest {
             val next = kgit.commit("Second commit", structure.absolutePath)
             assertThat(objectDb.getHead()).isEqualTo(next)
 
-            kgit.checkout(orig)
+            kgit.checkout(orig, "${structure.absolutePath}/")
             assertFilesRestored()
             assertThat(objectDb.getHead()).isEqualTo(orig)
         }

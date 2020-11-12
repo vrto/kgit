@@ -69,5 +69,9 @@ class KGit(private val objectDb: ObjectDatabase) {
         return Commit(treeOid, parentOid, msg)
     }
 
-    fun checkout(oid: Oid) {}
+    fun checkout(oid: Oid, directory: String = "./") {
+        val commit = getCommit(oid)
+        readTree(commit.treeOid, directory)
+        objectDb.setHead(oid)
+    }
 }
