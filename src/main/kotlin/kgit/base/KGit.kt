@@ -68,4 +68,6 @@ class KGit(private val objectDb: ObjectDatabase) {
 
         return Commit(treeOid, parentOid, msg)
     }
+
+    fun checkout(oid: Oid) {}
 }

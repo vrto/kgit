@@ -14,12 +14,12 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 
-val objectDb = ObjectDatabase()
-val kgit = KGit(objectDb)
+private val objectDb = ObjectDatabase()
+private val kgit = KGit(objectDb)
 
 fun main(args: Array<String>) {
     KGitCli()
-        .subcommands(Init(), HashObject(), CatFile(), WriteTree(), ReadTree(), CommitCmd(), Log())
+        .subcommands(Init(), HashObject(), CatFile(), WriteTree(), ReadTree(), CommitCmd(), Log(), Checkout())
         .main(args)
 }
 
@@ -110,5 +110,14 @@ class Log : CliktCommand(help = "Walk the list of commits and print them") {
         println("commit $oid")
         println("\t$message")
         println("")
+    }
+}
+
+class Checkout : CliktCommand(help = "Read tree using the given OID and move HEAD") {
+
+    private val oid: String by argument(help = "OID to checkout")
+
+    override fun run() {
+        kgit.checkout(oid.toOid())
     }
 }
