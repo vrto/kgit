@@ -3,15 +3,13 @@ package kgit
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.clikt.parameters.arguments.argument
+import com.github.ajalt.clikt.parameters.arguments.optional
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import kgit.base.Commit
 import kgit.base.KGit
-import kgit.data.KGIT_DIR
-import kgit.data.ObjectDatabase
-import kgit.data.Oid
-import kgit.data.TYPE_BLOB
+import kgit.data.*
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -96,8 +94,11 @@ class CommitCmd : CliktCommand(
 }
 
 class Log : CliktCommand(help = "Walk the list of commits and print them") {
+
+    private val start: String? by argument(help = "OID to start from").optional()
+
     override fun run() {
-        var oid = objectDb.getHead()
+        var oid = start?.toOid() ?: objectDb.getHead()
         while (oid != null) {
             val commit = kgit.getCommit(oid)
             commit.prettyPrint(oid)
