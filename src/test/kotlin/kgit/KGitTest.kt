@@ -180,4 +180,34 @@ class KGitTest {
             assertThat(objectDb.getHead()).isEqualTo(orig)
         }
     }
+
+    @Nested
+    inner class Tags {
+
+        @Test
+        fun `should create a tag`() {
+            val oid = kgit.commit(
+                    message = "Test commit",
+                    directory = STATIC_STRUCTURE
+            )
+
+            kgit.tag("test-tag", oid)
+
+            val ref = objectDb.getRef("test-tag")
+            assertThat(ref).isEqualTo(oid)
+        }
+
+        @Test
+        fun `should create a tag with slashes`() {
+            val oid = kgit.commit(
+                    message = "Test commit",
+                    directory = STATIC_STRUCTURE
+            )
+
+            kgit.tag("nested/tag", oid)
+
+            val ref = objectDb.getRef("nested/tag")
+            assertThat(ref).isEqualTo(oid)
+        }
+    }
 }

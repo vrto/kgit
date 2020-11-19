@@ -1,5 +1,6 @@
 package kgit.data
 
+import kgit.base.createNewFileWithinHierarchy
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
@@ -64,7 +65,10 @@ class ObjectDatabase {
     }
 
     fun updateRef(refName: String, oid: Oid) {
-        File(".kgit/$refName").writeText(oid.value)
+        File(".kgit/$refName").apply {
+            createNewFileWithinHierarchy()
+            writeText(oid.value)
+        }
     }
 
     fun getHead(): Oid? = getRef("HEAD")

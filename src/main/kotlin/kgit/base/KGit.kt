@@ -43,7 +43,7 @@ class KGit(private val objectDb: ObjectDatabase) {
         val lines = rawTree.split("\n")
         return lines.map {
             val parts = it.split(" ")
-            require(parts.size == 3)
+            require(parts.size == 3) { "Expected three lines: type, oid, name" }
             Tree.Entry(type = parts[0], oid = Oid(parts[1]), name = parts[2])
         }.toTree()
     }
@@ -76,6 +76,6 @@ class KGit(private val objectDb: ObjectDatabase) {
     }
 
     fun tag(tagName: String, oid: Oid) {
-        TODO("tag")
+        objectDb.updateRef(tagName, oid)
     }
 }
