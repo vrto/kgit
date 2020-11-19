@@ -193,7 +193,7 @@ class KGitTest {
 
             kgit.tag("test-tag", oid)
 
-            val ref = objectDb.getRef("test-tag")
+            val ref = objectDb.getRef("refs/tags/test-tag")
             assertThat(ref).isEqualTo(oid)
         }
 
@@ -206,7 +206,7 @@ class KGitTest {
 
             kgit.tag("nested/tag", oid)
 
-            val ref = objectDb.getRef("nested/tag")
+            val ref = objectDb.getRef("refs/tags/nested/tag")
             assertThat(ref).isEqualTo(oid)
         }
     }

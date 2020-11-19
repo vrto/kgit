@@ -76,6 +76,6 @@ class KGit(private val objectDb: ObjectDatabase) {
     }
 
     fun tag(tagName: String, oid: Oid) {
-        objectDb.updateRef(tagName, oid)
+        objectDb.updateRef("refs/tags/$tagName", oid)
     }
 }
