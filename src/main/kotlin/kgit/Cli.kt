@@ -19,7 +19,7 @@ private val kgit = KGit(objectDb)
 
 fun main(args: Array<String>) {
     KGitCli()
-        .subcommands(Init(), HashObject(), CatFile(), WriteTree(), ReadTree(), CommitCmd(), Log(), Checkout())
+        .subcommands(Init(), HashObject(), CatFile(), WriteTree(), ReadTree(), CommitCmd(), Log(), Checkout(), Tag())
         .main(args)
 }
 
@@ -119,5 +119,15 @@ class Checkout : CliktCommand(help = "Read tree using the given OID and move HEA
 
     override fun run() {
         kgit.checkout(oid.toOid())
+    }
+}
+
+class Tag : CliktCommand(help = "Tag a commit") {
+
+    private val name: String by argument(help = "Tag name to use")
+    private val oid: String? by argument(help = "OID to tag").optional()
+
+    override fun run() {
+        kgit.tag(name, oid?.toOid() ?: objectDb.getHead()!!)
     }
 }

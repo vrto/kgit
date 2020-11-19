@@ -74,4 +74,8 @@ class KGit(private val objectDb: ObjectDatabase) {
         readTree(commit.treeOid, directory)
         objectDb.setHead(oid)
     }
+
+    fun tag(tagName: String, oid: Oid) {
+        TODO("tag")
+    }
 }
