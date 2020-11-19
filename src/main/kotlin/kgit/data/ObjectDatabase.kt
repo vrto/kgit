@@ -60,13 +60,19 @@ class ObjectDatabase {
     }
 
     fun setHead(oid: Oid) {
-        File(HEAD_DIR).writeText(oid.value)
+        updateRef("HEAD", oid)
     }
 
-    fun getHead(): Oid? {
-        val head = File(HEAD_DIR)
+    fun updateRef(refName: String, oid: Oid) {
+        File(".kgit/$refName").writeText(oid.value)
+    }
+
+    fun getHead(): Oid? = getRef("HEAD")
+
+    fun getRef(refName: String): Oid? {
+        val ref = File(".kgit/$refName")
         return when {
-            head.exists() -> head.readText().toOid()
+            ref.exists() -> ref.readText().toOid()
             else -> null
         }
     }
