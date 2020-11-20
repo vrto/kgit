@@ -247,5 +247,10 @@ class KGitTest {
                 kgit.getOid("bogus")
             }
         }
+
+        @Test
+        fun `should translate '@' to HEAD`() {
+            assertThat(kgit.getOid("@")).isEqualTo(objectDb.getHead())
+        }
     }
 }

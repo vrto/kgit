@@ -79,7 +79,7 @@ class KGit(private val objectDb: ObjectDatabase) {
         objectDb.updateRef("refs/tags/$tagName", oid)
     }
 
-    fun getOid(name: String): Oid = objectDb.getRef(name)
+    fun getOid(name: String): Oid = objectDb.getRef(name.unaliasHead())
             ?: objectDb.getRef("refs/$name")
             ?: objectDb.getRef("refs/tags/$name")
             ?: objectDb.getRef("refs/heads/$name")
@@ -88,4 +88,9 @@ class KGit(private val objectDb: ObjectDatabase) {
                     "OID not in  SHA1"
                 }
             }
+
+    private fun String.unaliasHead() = when(this) {
+        "@" -> "HEAD"
+        else -> this
+    }
 }

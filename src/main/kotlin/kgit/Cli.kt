@@ -103,8 +103,7 @@ class Log : CliktCommand(help = "Walk the list of commits and print them") {
     private val start: String? by argument(help = "OID to start from").optional()
 
     override fun run() {
-        var oid = start?.let { kgit.getOid(it) }
-                ?: objectDb.getHead()
+        var oid: Oid? = kgit.getOid(start ?: "@")
         while (oid != null) {
             val commit = kgit.getCommit(oid)
             commit.prettyPrint(oid)
@@ -135,8 +134,7 @@ class Tag : CliktCommand(help = "Tag a commit") {
     private val oid: String? by argument(help = "OID to tag").optional()
 
     override fun run() {
-        val resolved = oid?.let { kgit.getOid(it) }
-                ?: objectDb.getHead()!!
+        val resolved = kgit.getOid(oid ?: "@")
         kgit.tag(name, resolved)
     }
 }
