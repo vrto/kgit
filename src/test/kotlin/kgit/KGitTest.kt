@@ -210,4 +210,32 @@ class KGitTest {
             assertThat(ref).isEqualTo(oid)
         }
     }
+
+    @Nested
+    inner class OidResolving {
+
+        var oid: Oid = Oid("N/A")
+
+        @BeforeEach
+        fun prepareTestCommit() {
+            oid = kgit.commit(
+                    message = "Test commit",
+                    directory = STATIC_STRUCTURE
+            )
+        }
+
+        @Test
+        fun `should resolve OID into an OID`() {
+            val resolved = kgit.getOid(oid.value)
+            assertThat(resolved).isEqualTo(oid)
+        }
+
+        @Test
+        fun `should resolve ref into an OID`() {
+            kgit.tag("tag-to-resolve", oid)
+
+            val resolved = kgit.getOid("refs/tags/tag-to-resolve")
+            assertThat(resolved).isEqualTo(oid)
+        }
+    }
 }

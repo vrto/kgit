@@ -9,7 +9,10 @@ import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import kgit.base.Commit
 import kgit.base.KGit
-import kgit.data.*
+import kgit.data.KGIT_DIR
+import kgit.data.ObjectDatabase
+import kgit.data.Oid
+import kgit.data.TYPE_BLOB
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -54,7 +57,8 @@ class CatFile : CliktCommand(name = "cat-file", help = "Print hashed object") {
     private val expected: String by option(help = "expected type to match").default(TYPE_BLOB)
 
     override fun run() {
-        echo(objectDb.getObject(Oid(oid), expected))
+        val resolved = kgit.getOid(oid)
+        echo(objectDb.getObject(resolved, expected))
     }
 }
 
@@ -75,7 +79,8 @@ class ReadTree : CliktCommand(
     private val tree: String by argument(help = "Tree OID to read")
 
     override fun run() {
-        kgit.readTree(Oid(tree))
+        val resolved = kgit.getOid(tree)
+        kgit.readTree(resolved)
         echo("Tree $tree has been restored into the working directory.")
     }
 }
@@ -98,7 +103,8 @@ class Log : CliktCommand(help = "Walk the list of commits and print them") {
     private val start: String? by argument(help = "OID to start from").optional()
 
     override fun run() {
-        var oid = start?.toOid() ?: objectDb.getHead()
+        var oid = start?.let { kgit.getOid(it) }
+                ?: objectDb.getHead()
         while (oid != null) {
             val commit = kgit.getCommit(oid)
             commit.prettyPrint(oid)
@@ -118,7 +124,8 @@ class Checkout : CliktCommand(help = "Read tree using the given OID and move HEA
     private val oid: String by argument(help = "OID to checkout")
 
     override fun run() {
-        kgit.checkout(oid.toOid())
+        val resolved = kgit.getOid(oid)
+        kgit.checkout(resolved)
     }
 }
 
@@ -128,6 +135,8 @@ class Tag : CliktCommand(help = "Tag a commit") {
     private val oid: String? by argument(help = "OID to tag").optional()
 
     override fun run() {
-        kgit.tag(name, oid?.toOid() ?: objectDb.getHead()!!)
+        val resolved = oid?.let { kgit.getOid(it) }
+                ?: objectDb.getHead()!!
+        kgit.tag(name, resolved)
     }
 }
