@@ -5,10 +5,7 @@ import assertk.assertThat
 import assertk.assertions.*
 import kgit.base.KGit
 import kgit.data.*
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Nested
-import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.*
 import java.io.File
 import java.nio.file.Path
 
@@ -214,7 +211,7 @@ class KGitTest {
     @Nested
     inner class OidResolving {
 
-        var oid: Oid = Oid("N/A")
+        private var oid: Oid = Oid("N/A")
 
         @BeforeEach
         fun prepareTestCommit() {
@@ -234,8 +231,21 @@ class KGitTest {
         fun `should resolve ref into an OID`() {
             kgit.tag("tag-to-resolve", oid)
 
-            val resolved = kgit.getOid("refs/tags/tag-to-resolve")
-            assertThat(resolved).isEqualTo(oid)
+            val resolvedViaRoot = kgit.getOid("refs/tags/tag-to-resolve")
+            val resolvedViaRefs = kgit.getOid("tags/tag-to-resolve")
+            val resolvedViaTags = kgit.getOid("tag-to-resolve")
+//            val resolvedViaHeads = kgit.getOid("tag-to-resolve") TBD
+
+            assertThat(resolvedViaRoot).isEqualTo(oid)
+            assertThat(resolvedViaRefs).isEqualTo(oid)
+            assertThat(resolvedViaTags).isEqualTo(oid)
+        }
+
+        @Test
+        fun `should crash if name can't be resolved into any OID`() {
+            assertThrows<IllegalArgumentException> {
+                kgit.getOid("bogus")
+            }
         }
     }
 }

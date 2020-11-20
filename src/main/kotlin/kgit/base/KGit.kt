@@ -79,5 +79,13 @@ class KGit(private val objectDb: ObjectDatabase) {
         objectDb.updateRef("refs/tags/$tagName", oid)
     }
 
-    fun getOid(name: String): Oid = objectDb.getRef(name) ?: name.toOid()
+    fun getOid(name: String): Oid = objectDb.getRef(name)
+            ?: objectDb.getRef("refs/$name")
+            ?: objectDb.getRef("refs/tags/$name")
+            ?: objectDb.getRef("refs/heads/$name")
+            ?: name.toOid().also {
+                require(it.value.length == 40) {
+                    "OID not in  SHA1"
+                }
+            }
 }
