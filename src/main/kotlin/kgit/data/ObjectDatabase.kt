@@ -80,6 +80,15 @@ class ObjectDatabase {
             else -> null
         }
     }
+
+    fun iterateRefs(): List<NamedRef> {
+        val root = File(".kgit/refs")
+        val names = root.walk().filter { it.isFile }.map { it.toRelativeString(root) }
+        val refs = names.map {
+            NamedRef(it, getRef("refs/$it")!!)
+        }
+        return listOf(NamedRef("HEAD", getHead()!!)) + refs
+    }
 }
 
 class InvalidTypeException(expected: String, actual: String)
@@ -90,3 +99,7 @@ inline class Oid(val value: String) {
 }
 
 fun String.toOid() = Oid(this)
+
+data class NamedRef(val name: String, val ref: Oid) {
+    override fun toString() = "$name $ref"
+}

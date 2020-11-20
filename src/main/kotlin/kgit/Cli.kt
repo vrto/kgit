@@ -22,7 +22,8 @@ private val kgit = KGit(objectDb)
 
 fun main(args: Array<String>) {
     KGitCli()
-        .subcommands(Init(), HashObject(), CatFile(), WriteTree(), ReadTree(), CommitCmd(), Log(), Checkout(), Tag())
+        .subcommands(Init(), HashObject(), CatFile(), WriteTree(), ReadTree(),
+                     CommitCmd(), Log(), Checkout(), Tag(), K())
         .main(args)
 }
 
@@ -136,5 +137,15 @@ class Tag : CliktCommand(help = "Tag a commit") {
     override fun run() {
         val resolved = kgit.getOid(oid ?: "@")
         kgit.tag(name, resolved)
+    }
+}
+
+// K like gitk
+class K : CliktCommand(name = "k", help = "Print refs") {
+
+    override fun run() {
+        objectDb.iterateRefs().forEach {
+            println(it)
+        }
     }
 }

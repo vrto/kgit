@@ -1,10 +1,7 @@
 package kgit
 
 import assertk.assertThat
-import assertk.assertions.isEqualTo
-import assertk.assertions.isFalse
-import assertk.assertions.isNull
-import assertk.assertions.isTrue
+import assertk.assertions.*
 import kgit.data.*
 import org.junit.jupiter.api.*
 import java.io.File
@@ -110,6 +107,33 @@ class ObjectDatabaseTest {
 
             val headOid = objectDb.getHead()
             assertThat(headOid).isEqualTo(oid)
+        }
+    }
+
+    @Nested
+    inner class Refs {
+
+        @BeforeEach
+        fun initDb() {
+            objectDb.init()
+        }
+
+        @Test
+        fun `should iterate refs`() {
+            File("$KGIT_DIR/refs/tags").mkdirs()
+
+            val oid1 = objectDb.hashObject("sample data".toByteArray(), TYPE_BLOB)
+            val oid2 = objectDb.hashObject("sample data".toByteArray(), TYPE_BLOB)
+            File("$KGIT_DIR/refs/tags/tag1").writeText(oid1.value)
+            File("$KGIT_DIR/refs/tags/tag2").writeText(oid2.value)
+            objectDb.setHead(oid1)
+
+            val refs = objectDb.iterateRefs()
+
+            assertThat(refs).containsExactly(
+                    NamedRef("HEAD", oid1),
+                    NamedRef("tags/tag2", oid2),
+                    NamedRef("tags/tag1", oid1))
         }
     }
 }
