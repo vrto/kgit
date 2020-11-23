@@ -144,7 +144,7 @@ class KGitTest {
             val next = kgit.commit("Second commit")
             assertThat(objectDb.getHead()).isEqualTo(next)
 
-            kgit.checkout(orig, "TODO/")
+            kgit.checkout(orig)
             assertFilesRestored()
             assertThat(objectDb.getHead()).isEqualTo(orig)
         }
@@ -155,9 +155,7 @@ class KGitTest {
 
         @Test
         fun `should create a tag`() {
-            val oid = kgit.commit(
-                message = "Test commit"
-            )
+            val oid = kgit.commit("Test commit")
 
             kgit.tag("test-tag", oid)
 
@@ -167,9 +165,7 @@ class KGitTest {
 
         @Test
         fun `should create a tag with slashes`() {
-            val oid = kgit.commit(
-                message = "Test commit"
-            )
+            val oid = kgit.commit("Test commit")
 
             kgit.tag("nested/tag", oid)
 
@@ -185,9 +181,7 @@ class KGitTest {
 
         @BeforeEach
         fun prepareTestCommit() {
-            oid = kgit.commit(
-                message = "Test commit"
-            )
+            oid = kgit.commit("Test commit")
         }
 
         @Test
@@ -226,7 +220,7 @@ class KGitTest {
     @Nested
     inner class OidListing {
 
-        //        @Test
+        @Test
         fun `should list all OIDs reachable for ref(s)`() {
             // o
             val first = kgit.commit("First commit")
