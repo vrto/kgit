@@ -146,5 +146,12 @@ class K : CliktCommand(name = "k", help = "Print refs") {
         val namedRefs = objectDb.iterateRefs()
         namedRefs.forEach(::println)
         val refs = namedRefs.map { it.ref }
+
+        val allCommits = kgit.listCommitsAndParents(refs)
+        allCommits.forEach { oid ->
+            val commit = kgit.getCommit(oid)
+            print(oid)
+            commit.parentOid?.let { print("Parent $it") }
+        }
     }
 }

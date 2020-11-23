@@ -261,14 +261,14 @@ class KGitTest {
             //               refs/tags/alternate
             kgit.tag("alternate-idea", alternate2)
 
-            val originalPath = kgit.listCommitsAndParents(tagsToOids("refs/tags/final"))
+            val originalPath = kgit.listCommitsAndParents(tagsToOids("refs/tags/final-idea"))
             assertThat(originalPath).containsExactly(final, third, second, first)
 
-            val alternatePath = kgit.listCommitsAndParents(tagsToOids("refs/tags/alternate"))
+            val alternatePath = kgit.listCommitsAndParents(tagsToOids("refs/tags/alternate-idea"))
             assertThat(alternatePath).containsExactly(alternate2, alternate1, second, first)
 
-            val everything = kgit.listCommitsAndParents(tagsToOids("refs/tags/final", "refs/tags/alternate"))
-            assertThat(everything).containsExactly(final, third, second, first, alternate1, alternate2)
+            val everything = kgit.listCommitsAndParents(tagsToOids("refs/tags/final-idea", "refs/tags/alternate-idea"))
+            assertThat(everything).containsAll(final, third, second, first, alternate1, alternate2)
         }
 
         private fun tagsToOids(vararg tags: String) = tags.map(kgit::getOid)
