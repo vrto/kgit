@@ -3,17 +3,10 @@ package kgit
 import assertk.assertThat
 import assertk.assertions.isEqualTo
 import assertk.assertions.isFalse
-import assertk.assertions.isTrue
 import java.io.File
 
 val DYNAMIC_STRUCTURE = "src/test/resources/dynamic-structure"
 val STATIC_STRUCTURE = "src/test/resources/test-structure"
-
-fun ensureStaticTestStructure(): File {
-    val dirToWrite = File(STATIC_STRUCTURE)
-    assertThat(dirToWrite.exists()).isTrue()
-    return dirToWrite
-}
 
 fun createDynamicTestStructure(): File {
     // desired state:

@@ -10,7 +10,10 @@ import java.nio.file.Path
 
 class ObjectDatabaseTest {
 
-    val objectDb = ObjectDatabase()
+    val objectDb = ObjectDatabase(STATIC_STRUCTURE)
+
+    val KGIT_DIR = "$STATIC_STRUCTURE/.kgit"
+    val HEAD_DIR = "$KGIT_DIR/HEAD"
 
     @BeforeEach
     @AfterEach
@@ -131,9 +134,9 @@ class ObjectDatabaseTest {
             val refs = objectDb.iterateRefs()
 
             assertThat(refs).containsExactly(
-                    NamedRef("HEAD", oid1),
-                    NamedRef("tags/tag2", oid2),
-                    NamedRef("tags/tag1", oid1))
+                NamedRef("HEAD", oid1),
+                NamedRef("tags/tag2", oid2),
+                NamedRef("tags/tag1", oid1))
         }
     }
 }

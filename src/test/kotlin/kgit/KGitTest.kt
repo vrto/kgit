@@ -5,25 +5,23 @@ import assertk.assertThat
 import assertk.assertions.*
 import kgit.base.KGit
 import kgit.data.*
-import org.junit.jupiter.api.*
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import java.io.File
 import java.nio.file.Path
 
 class KGitTest {
 
-    private val objectDb = ObjectDatabase()
+    private val objectDb = ObjectDatabase(DYNAMIC_STRUCTURE)
     private val kgit = KGit(objectDb)
 
     @BeforeEach
     fun createKgitDir() {
-        objectDb.init()
-    }
-
-    @BeforeEach
-    @AfterEach
-    fun cleanUp() {
-        Path.of(KGIT_DIR).toFile().deleteRecursively()
         Path.of(DYNAMIC_STRUCTURE).toFile().deleteRecursively()
+        createDynamicTestStructure()
+        objectDb.init()
     }
 
     @Nested
@@ -31,42 +29,34 @@ class KGitTest {
 
         @Test
         fun `should write tree`() {
-            val treeOid = ensureStaticTestStructure().let {
-                kgit.writeTree(directory = it.absolutePath)
-            }
+            val treeOid = kgit.writeTree()
 
             val content = objectDb.getObject(treeOid, TYPE_TREE)
             val lines = content.split("\n")
-            assertThat(lines).hasSize(3)
+            assertThat(lines).hasSize(2)
 
             assertAll {
                 assertThat(lines[0]).contains("blob")
-                assertThat(lines[0]).contains("cats.txt")
+                assertThat(lines[0]).contains("flat.txt")
                 assertThat(lines[1]).contains("tree")
-                assertThat(lines[1]).contains("other")
-                assertThat(lines[2]).contains("blob")
-                assertThat(lines[2]).contains("dogs.txt")
+                assertThat(lines[1]).contains("subdir")
             }
         }
 
         @Test
         fun `should get an already saved tree`() {
-            val treeOid = ensureStaticTestStructure().let {
-                kgit.writeTree(directory = it.absolutePath)
-            }
+            val treeOid = kgit.writeTree()
 
             val tree = kgit.getTree(treeOid).parseState(basePath = "./", kgit::getTree)
 
-            assertThat(tree.size).isEqualTo(3)
-            assertThat(tree).extracting { it.path }.containsOnly("./cats.txt", "./dogs.txt", "./other/shoes.txt")
+            assertThat(tree.size).isEqualTo(2)
+            assertThat(tree).extracting { it.path }.containsOnly("./flat.txt", "./subdir/nested.txt")
             assertThat(tree).extracting { it.oid }.doesNotContain(null)
         }
 
         @Test
         fun `should write tree, modify files & read back the original tree`() {
-            val treeOid = createDynamicTestStructure().let {
-                kgit.writeTree(directory = it.absolutePath)
-            }
+            val treeOid = kgit.writeTree()
             modifyCurrentWorkingDirFiles()
 
             assertFilesChanged()
@@ -78,12 +68,11 @@ class KGitTest {
     @Nested
     inner class Commits {
 
+        private val HEAD_DIR = "$DYNAMIC_STRUCTURE/.kgit/HEAD"
+
         @Test
         fun `should create a first commit`() {
-            val oid = kgit.commit(
-                message = "Test commit",
-                directory = STATIC_STRUCTURE
-            )
+            val oid = kgit.commit("Test commit")
 
             val content = objectDb.getObject(oid, expectedType = TYPE_COMMIT)
             val lines = content.split("\n")
@@ -100,15 +89,9 @@ class KGitTest {
 
         @Test
         fun `should link commits together`() {
-            val parent = kgit.commit(
-                message = "Test commit 1",
-                directory = STATIC_STRUCTURE
-            )
+            val parent = kgit.commit("Test commit 1")
 
-            val head = kgit.commit(
-                message = "Test commit 2",
-                directory = STATIC_STRUCTURE
-            )
+            val head = kgit.commit("Test commit 2")
 
             val content = objectDb.getObject(head, expectedType = TYPE_COMMIT)
             val lines = content.split("\n")
@@ -126,10 +109,7 @@ class KGitTest {
 
         @Test
         fun `should get the first commit`() {
-            val oid = kgit.commit(
-                message = "Test commit",
-                directory = STATIC_STRUCTURE
-            )
+            val oid = kgit.commit("Test commit")
 
             val commit = kgit.getCommit(oid)
             with (commit) {
@@ -141,17 +121,10 @@ class KGitTest {
 
         @Test
         fun `should get a commit with parent`() {
-            val parentOid = kgit.commit(
-                message = "Parent mesg",
-                directory = STATIC_STRUCTURE
-            )
-
-            val headOid = kgit.commit(
-                message = "Head msg",
-                directory = STATIC_STRUCTURE
-            )
-
+            val parentOid = kgit.commit("Parent msg")
+            val headOid = kgit.commit("Head msg")
             val commit = kgit.getCommit(headOid)
+
             with (commit) {
                 assertThat(treeOid).isNotNull()
                 assertThat(parentOid).isEqualTo(parentOid)
@@ -165,14 +138,13 @@ class KGitTest {
 
         @Test
         fun `should checkout a commit`() {
-            val structure = createDynamicTestStructure()
-            val orig = kgit.commit("First commit", structure.absolutePath)
+            val orig = kgit.commit("First commit")
 
             modifyCurrentWorkingDirFiles()
-            val next = kgit.commit("Second commit", structure.absolutePath)
+            val next = kgit.commit("Second commit")
             assertThat(objectDb.getHead()).isEqualTo(next)
 
-            kgit.checkout(orig, "${structure.absolutePath}/")
+            kgit.checkout(orig, "TODO/")
             assertFilesRestored()
             assertThat(objectDb.getHead()).isEqualTo(orig)
         }
@@ -184,8 +156,7 @@ class KGitTest {
         @Test
         fun `should create a tag`() {
             val oid = kgit.commit(
-                    message = "Test commit",
-                    directory = STATIC_STRUCTURE
+                message = "Test commit"
             )
 
             kgit.tag("test-tag", oid)
@@ -197,8 +168,7 @@ class KGitTest {
         @Test
         fun `should create a tag with slashes`() {
             val oid = kgit.commit(
-                    message = "Test commit",
-                    directory = STATIC_STRUCTURE
+                message = "Test commit"
             )
 
             kgit.tag("nested/tag", oid)
@@ -216,8 +186,7 @@ class KGitTest {
         @BeforeEach
         fun prepareTestCommit() {
             oid = kgit.commit(
-                    message = "Test commit",
-                    directory = STATIC_STRUCTURE
+                message = "Test commit"
             )
         }
 
@@ -257,21 +226,19 @@ class KGitTest {
     @Nested
     inner class OidListing {
 
-//        @Test
+        //        @Test
         fun `should list all OIDs reachable for ref(s)`() {
-            val path = createDynamicTestStructure().absolutePath
-            
             // o
-            val first = kgit.commit("First commit", path)
+            val first = kgit.commit("First commit")
 
             // o<----o
-            val second = kgit.commit("Second commit", path)
+            val second = kgit.commit("Second commit")
 
             // o<----o----o
-            val third = kgit.commit("Third commit", path)
+            val third = kgit.commit("Third commit")
 
             // o<----o----o----o
-            val final = kgit.commit("Final idea", path)
+            val final = kgit.commit("Final idea")
 
             // o<----o----o----@
             //                 ^
@@ -281,17 +248,17 @@ class KGitTest {
             // o<----@----o----o
             //                 ^
             //                 refs/tags/final
-            kgit.checkout(second, path)
+            kgit.checkout(second)
 
             // o<----o----o----o
             //       \         ^
             //        <--$     refs/tags/final
-            val alternate1 = kgit.commit("Idea 1", path)
+            val alternate1 = kgit.commit("Idea 1")
 
             // o<----o----o----o
             //       \         ^
             //        <--$---$ refs/tags/final
-            val alternate2 = kgit.commit("Idea 1 some more", path)
+            val alternate2 = kgit.commit("Idea 1 some more")
 
             // o<----o----o----o
             //       \         ^

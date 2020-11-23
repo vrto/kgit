@@ -1,10 +1,9 @@
 package kgit.base
 
-import kgit.data.KGIT_DIR
 import java.io.File
 import java.io.IOException
 
-fun File.isIgnored(): Boolean = this.path.contains(KGIT_DIR)
+fun File.isIgnored(): Boolean = this.path.contains(".kgit") //TODO use constant
 
 fun File.createNewFileWithinHierarchy() =
     try {

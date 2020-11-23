@@ -9,7 +9,6 @@ import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import kgit.base.Commit
 import kgit.base.KGit
-import kgit.data.KGIT_DIR
 import kgit.data.ObjectDatabase
 import kgit.data.Oid
 import kgit.data.TYPE_BLOB
@@ -17,13 +16,13 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 
-private val objectDb = ObjectDatabase()
+private val objectDb = ObjectDatabase(workDir = ".")
 private val kgit = KGit(objectDb)
 
 fun main(args: Array<String>) {
     KGitCli()
         .subcommands(Init(), HashObject(), CatFile(), WriteTree(), ReadTree(),
-                     CommitCmd(), Log(), Checkout(), Tag(), K())
+            CommitCmd(), Log(), Checkout(), Tag(), K())
         .main(args)
 }
 
@@ -36,7 +35,7 @@ class KGitCli : CliktCommand(help = "Simple Git-like VCS program") {
 class Init : CliktCommand(help = "Initialize kgit repository") {
     override fun run() {
         objectDb.init()
-        echo("Initialized empty kgit repository in ${Paths.get(".").toAbsolutePath().normalize()}/$KGIT_DIR")
+        echo("Initialized empty kgit repository in ${Paths.get(".").toAbsolutePath().normalize()}/.kgit")
     }
 }
 

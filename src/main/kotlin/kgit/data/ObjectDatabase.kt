@@ -6,9 +6,9 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.security.MessageDigest
 
-const val KGIT_DIR = ".kgit"
-const val OBJECTS_DIR = ".kgit/objects"
-const val HEAD_DIR = ".kgit/HEAD"
+private const val KGIT_DIR = ".kgit"
+private const val OBJECTS_DIR = ".kgit/objects"
+private const val REFS_DIR = ".kgit/refs"
 
 const val TYPE_BLOB = "blob"
 const val TYPE_TREE = "tree"
@@ -16,10 +16,10 @@ const val TYPE_COMMIT = "commit"
 
 private const val nullByte = 0.toChar().toByte()
 
-class ObjectDatabase {
+class ObjectDatabase(val workDir: String) {
 
     fun init() {
-        Files.createDirectory(Path.of(KGIT_DIR))
+        Files.createDirectory(Path.of("$workDir/$KGIT_DIR"))
     }
 
     fun hashObject(data: ByteArray, type: String): Oid {
@@ -32,20 +32,20 @@ class ObjectDatabase {
         val oid = digest.joinToString(separator = "") { "%02x".format(it) }
 
         // write actual binary content using the OID
-        File("$OBJECTS_DIR/$oid").writeBytes(input)
+        File("$workDir/$OBJECTS_DIR/$oid").writeBytes(input)
 
         return Oid(oid)
     }
 
     private fun ensureObjectsDirectory() {
-        val objectsDirectory = Path.of(OBJECTS_DIR)
+        val objectsDirectory = Path.of("$workDir/$OBJECTS_DIR")
         if (!Files.exists(objectsDirectory)) {
             Files.createDirectory(objectsDirectory)
         }
     }
 
     fun getObject(oid: Oid, expectedType: String): String {
-        val obj = Path.of("$OBJECTS_DIR/$oid")
+        val obj = Path.of("$workDir/$OBJECTS_DIR/$oid")
         val allBytes = Files.readAllBytes(obj)
 
         // null byte separates the type from the content
@@ -65,7 +65,7 @@ class ObjectDatabase {
     }
 
     fun updateRef(refName: String, oid: Oid) {
-        File(".kgit/$refName").apply {
+        File("$workDir/$KGIT_DIR/$refName").apply {
             createNewFileWithinHierarchy()
             writeText(oid.value)
         }
@@ -74,7 +74,7 @@ class ObjectDatabase {
     fun getHead(): Oid? = getRef("HEAD")
 
     fun getRef(refName: String): Oid? {
-        val ref = File(".kgit/$refName")
+        val ref = File("$workDir/$KGIT_DIR/$refName")
         return when {
             ref.exists() -> ref.readText().toOid()
             else -> null
@@ -82,7 +82,7 @@ class ObjectDatabase {
     }
 
     fun iterateRefs(): List<NamedRef> {
-        val root = File(".kgit/refs")
+        val root = File("$workDir/$REFS_DIR")
         val names = root.walk().filter { it.isFile }.map { it.toRelativeString(root) }
         val refs = names.map {
             NamedRef(it, getRef("refs/$it")!!)

@@ -5,7 +5,7 @@ import java.io.File
 
 class KGit(private val objectDb: ObjectDatabase) {
 
-    fun writeTree(directory: String = "."): Oid {
+    fun writeTree(directory: String = objectDb.workDir): Oid {
         val children = File(directory).listFiles()!!
         val tree = children
             .filterNot { it.isIgnored() }
@@ -26,7 +26,7 @@ class KGit(private val objectDb: ObjectDatabase) {
         return objectDb.hashObject(rawBytes, TYPE_TREE)
     }
 
-    fun readTree(treeOid: Oid, basePath: String = "./") {
+    fun readTree(treeOid: Oid, basePath: String = "./") { //TODO basePath can be workdir
         File(basePath).emptyDir()
         val tree = getTree(treeOid).parseState(basePath, ::getTree)
         tree.forEach {
@@ -48,8 +48,8 @@ class KGit(private val objectDb: ObjectDatabase) {
         }.toTree()
     }
 
-    fun commit(message: String, directory: String = "."): Oid {
-        val treeOid = writeTree(directory)
+    fun commit(message: String): Oid {
+        val treeOid = writeTree()
         val parent = objectDb.getHead()
         val commit = Commit(treeOid, parent, message)
         return objectDb.hashObject(commit.toString().encodeToByteArray(), TYPE_COMMIT).also {
@@ -80,14 +80,14 @@ class KGit(private val objectDb: ObjectDatabase) {
     }
 
     fun getOid(name: String): Oid = objectDb.getRef(name.unaliasHead())
-            ?: objectDb.getRef("refs/$name")
-            ?: objectDb.getRef("refs/tags/$name")
-            ?: objectDb.getRef("refs/heads/$name")
-            ?: name.toOid().also {
-                require(it.value.length == 40) {
-                    "OID not in  SHA1"
-                }
+        ?: objectDb.getRef("refs/$name")
+        ?: objectDb.getRef("refs/tags/$name")
+        ?: objectDb.getRef("refs/heads/$name")
+        ?: name.toOid().also {
+            require(it.value.length == 40) {
+                "OID not in  SHA1"
             }
+        }
 
     private fun String.unaliasHead() = when(this) {
         "@" -> "HEAD"
