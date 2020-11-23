@@ -26,7 +26,7 @@ class KGit(private val objectDb: ObjectDatabase) {
         return objectDb.hashObject(rawBytes, TYPE_TREE)
     }
 
-    fun readTree(treeOid: Oid, basePath: String = "./") { //TODO basePath can be workdir
+    fun readTree(treeOid: Oid, basePath: String = "./") {
         File(basePath).emptyDir()
         val tree = getTree(treeOid).parseState(basePath, ::getTree)
         tree.forEach {

@@ -6,7 +6,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.security.MessageDigest
 
-private const val KGIT_DIR = ".kgit"
+internal const val KGIT_DIR = ".kgit"
 private const val OBJECTS_DIR = ".kgit/objects"
 private const val REFS_DIR = ".kgit/refs"
 
