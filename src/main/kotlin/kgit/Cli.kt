@@ -144,8 +144,8 @@ class Tag : CliktCommand(help = "Tag a commit") {
 class K : CliktCommand(name = "k", help = "Print refs") {
 
     override fun run() {
-        objectDb.iterateRefs().forEach {
-            println(it)
-        }
+        val namedRefs = objectDb.iterateRefs()
+        namedRefs.forEach(::println)
+        val refs = namedRefs.map { it.ref }
     }
 }

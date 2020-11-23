@@ -253,4 +253,63 @@ class KGitTest {
             assertThat(kgit.getOid("@")).isEqualTo(objectDb.getHead())
         }
     }
+
+    @Nested
+    inner class OidListing {
+
+//        @Test
+        fun `should list all OIDs reachable for ref(s)`() {
+            val path = createDynamicTestStructure().absolutePath
+            
+            // o
+            val first = kgit.commit("First commit", path)
+
+            // o<----o
+            val second = kgit.commit("Second commit", path)
+
+            // o<----o----o
+            val third = kgit.commit("Third commit", path)
+
+            // o<----o----o----o
+            val final = kgit.commit("Final idea", path)
+
+            // o<----o----o----@
+            //                 ^
+            //                 refs/tags/final
+            kgit.tag("final-idea", final)
+
+            // o<----@----o----o
+            //                 ^
+            //                 refs/tags/final
+            kgit.checkout(second, path)
+
+            // o<----o----o----o
+            //       \         ^
+            //        <--$     refs/tags/final
+            val alternate1 = kgit.commit("Idea 1", path)
+
+            // o<----o----o----o
+            //       \         ^
+            //        <--$---$ refs/tags/final
+            val alternate2 = kgit.commit("Idea 1 some more", path)
+
+            // o<----o----o----o
+            //       \         ^
+            //        <--$---$ refs/tags/final
+            //               ^
+            //               refs/tags/alternate
+            kgit.tag("alternate-idea", alternate2)
+
+            val originalPath = kgit.listCommitsAndParents(tagsToOids("refs/tags/final"))
+            assertThat(originalPath).containsExactly(final, third, second, first)
+
+            val alternatePath = kgit.listCommitsAndParents(tagsToOids("refs/tags/alternate"))
+            assertThat(alternatePath).containsExactly(alternate2, alternate1, second, first)
+
+            val everything = kgit.listCommitsAndParents(tagsToOids("refs/tags/final", "refs/tags/alternate"))
+            assertThat(everything).containsExactly(final, third, second, first, alternate1, alternate2)
+        }
+
+        private fun tagsToOids(vararg tags: String) = tags.map(kgit::getOid)
+    }
 }

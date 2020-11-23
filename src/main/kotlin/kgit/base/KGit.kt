@@ -93,4 +93,21 @@ class KGit(private val objectDb: ObjectDatabase) {
         "@" -> "HEAD"
         else -> this
     }
+
+    fun listCommitsAndParents(refOids: List<Oid>): List<Oid> {
+        val oids: MutableList<Oid?> = refOids.toMutableList()
+        val visited = mutableSetOf<Oid>()
+
+        while (oids.isNotEmpty()) {
+            val oid = oids.removeFirstOrNull()
+            if (oid == null || oid in visited)
+                continue
+            visited.add(oid)
+
+            val commit = getCommit(oid)
+            oids.add(commit.parentOid)
+        }
+
+        return visited.toList()
+    }
 }
