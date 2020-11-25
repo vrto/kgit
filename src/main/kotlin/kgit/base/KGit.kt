@@ -96,7 +96,7 @@ class KGit(private val objectDb: ObjectDatabase) {
 
     fun listCommitsAndParents(refOids: List<Oid>): List<Oid> {
         val oids: MutableList<Oid?> = refOids.toMutableList()
-        val visited = mutableSetOf<Oid>()
+        val visited = linkedSetOf<Oid>() // preserving order of inserts
 
         while (oids.isNotEmpty()) {
             val oid = oids.removeFirstOrNull()
@@ -105,7 +105,7 @@ class KGit(private val objectDb: ObjectDatabase) {
             visited.add(oid)
 
             val commit = getCommit(oid)
-            oids.add(commit.parentOid)
+            oids.add(0, commit.parentOid)
         }
 
         return visited.toList()

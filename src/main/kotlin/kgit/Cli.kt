@@ -112,11 +112,11 @@ class Log : CliktCommand(help = "Walk the list of commits and print them") {
     private val start: String? by argument(help = "OID to start from").optional()
 
     override fun run() {
-        var oid: Oid? = kgit.getOid(start ?: "@")
-        while (oid != null) {
-            val commit = kgit.getCommit(oid)
-            commit.prettyPrint(oid)
-            oid = commit.parentOid
+        val oid: Oid? = kgit.getOid(start ?: "@")
+        val logStart = oid?.let { listOf(it) } ?: emptyList()
+        kgit.listCommitsAndParents(logStart).forEach {
+            val commit = kgit.getCommit(it)
+            commit.prettyPrint(it)
         }
     }
 
