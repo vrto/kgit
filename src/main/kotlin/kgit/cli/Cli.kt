@@ -21,8 +21,9 @@ fun main(args: Array<String>) {
                      Log(kgit),
                      Checkout(kgit),
                      Tag(kgit),
-                     K(objectDb, kgit))
-        .main(args)
+                     K(objectDb, kgit),
+                     Branch(kgit),
+        ).main(args)
 }
 
 class KGitCli : CliktCommand(help = "Simple Git-like VCS program") {

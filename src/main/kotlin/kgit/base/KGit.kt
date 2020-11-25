@@ -110,4 +110,8 @@ class KGit(private val objectDb: ObjectDatabase) {
 
         return visited.toList()
     }
+
+    fun createBranch(name: String, startPoint: Oid) {
+        objectDb.updateRef("refs/heads/$name", startPoint)
+    }
 }

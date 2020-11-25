@@ -273,4 +273,17 @@ class KGitTest {
 
         private fun tagsToOids(vararg tags: String) = tags.map(kgit::getOid)
     }
+
+    @Nested
+    inner class Branching {
+
+        @Test
+        fun `should create a new branch`() {
+            val oid = kgit.commit("First commit")
+
+            assertThat(objectDb.getRef("refs/heads/test-branch")).isNull()
+            kgit.createBranch("test-branch", oid)
+            assertThat(objectDb.getRef("refs/heads/test-branch")).isEqualTo(oid)
+        }
+    }
 }
