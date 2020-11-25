@@ -22,7 +22,7 @@ dependencies {
 }
 
 application {
-    mainClassName = "kgit.CliKt"
+    mainClassName = "kgit.cli.CliKt"
 }
 
 tasks.test {
