@@ -76,9 +76,14 @@ class ObjectDatabase(val workDir: String) {
     fun getRef(refName: String): Oid? {
         val ref = File("$workDir/$KGIT_DIR/$refName")
         return when {
-            ref.exists() -> ref.readText().toOid()
+            ref.exists() -> ref.readText().dereferenceOid()
             else -> null
         }
+    }
+
+    private fun String.dereferenceOid(): Oid = when {
+        this.startsWith("ref:") ->  this.drop("ref: ".length).toOid()
+        else -> this.toOid()
     }
 
     fun iterateRefs(): List<NamedRef> {

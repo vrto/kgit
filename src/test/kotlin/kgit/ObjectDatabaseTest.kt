@@ -138,6 +138,19 @@ class ObjectDatabaseTest {
                 NamedRef("tags/tag2", oid2),
                 NamedRef("tags/tag1", oid1))
         }
+
+        @Test
+        fun `should dereference symbolic ref`() {
+            File("$KGIT_DIR/refs/tags").mkdirs()
+            File("$KGIT_DIR/refs/heads").mkdirs()
+
+            val oid = objectDb.hashObject("sample data".toByteArray(), TYPE_BLOB)
+            File("$KGIT_DIR/refs/tags/tag1").writeText(oid.value)
+            File("$KGIT_DIR/refs/heads/branch1").writeText("ref: ${oid.value}")
+
+            assertThat(objectDb.getRef("refs/tags/tag1")).isEqualTo(oid)
+            assertThat(objectDb.getRef("refs/heads/branch1")).isEqualTo(oid)
+        }
     }
 }
 
