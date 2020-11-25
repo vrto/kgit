@@ -7,14 +7,23 @@ import com.github.ajalt.clikt.parameters.arguments.optional
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
+import guru.nidi.graphviz.attribute.Label
+import guru.nidi.graphviz.attribute.Shape
+import guru.nidi.graphviz.attribute.Style
+import guru.nidi.graphviz.engine.Format
+import guru.nidi.graphviz.engine.Graphviz
+import guru.nidi.graphviz.model.Factory.mutGraph
+import guru.nidi.graphviz.model.Factory.mutNode
 import kgit.base.Commit
 import kgit.base.KGit
 import kgit.data.ObjectDatabase
 import kgit.data.Oid
 import kgit.data.TYPE_BLOB
+import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
+
 
 private val objectDb = ObjectDatabase(workDir = ".")
 private val kgit = KGit(objectDb)
@@ -22,7 +31,7 @@ private val kgit = KGit(objectDb)
 fun main(args: Array<String>) {
     KGitCli()
         .subcommands(Init(), HashObject(), CatFile(), WriteTree(), ReadTree(),
-            CommitCmd(), Log(), Checkout(), Tag(), K())
+                     CommitCmd(), Log(), Checkout(), Tag(), K())
         .main(args)
 }
 
@@ -63,8 +72,8 @@ class CatFile : CliktCommand(name = "cat-file", help = "Print hashed object") {
 }
 
 class WriteTree : CliktCommand(
-    name = "write-tree",
-    help = "Recursively write directory with its contents into the Object Database"
+        name = "write-tree",
+        help = "Recursively write directory with its contents into the Object Database"
 ) {
     override fun run() {
         echo(kgit.writeTree())
@@ -72,8 +81,8 @@ class WriteTree : CliktCommand(
 }
 
 class ReadTree : CliktCommand(
-    name = "read-tree",
-    help = "Read the tree structure and write them into the working directory"
+        name = "read-tree",
+        help = "Read the tree structure and write them into the working directory"
 ) {
 
     private val tree: String by argument(help = "Tree OID to read")
@@ -86,8 +95,8 @@ class ReadTree : CliktCommand(
 }
 
 class CommitCmd : CliktCommand(
-    name = "commit",
-    help = "Create a new commit"
+        name = "commit",
+        help = "Create a new commit"
 ) {
 
     private val message: String by option("-m", "--message").required()
@@ -143,15 +152,24 @@ class Tag : CliktCommand(help = "Tag a commit") {
 class K : CliktCommand(name = "k", help = "Print refs") {
 
     override fun run() {
-        val namedRefs = objectDb.iterateRefs()
-        namedRefs.forEach(::println)
-        val refs = namedRefs.map { it.ref }
+        val graph = mutGraph("commits").setDirected(true)
 
-        val allCommits = kgit.listCommitsAndParents(refs)
+        val oids = objectDb.iterateRefs()
+                .onEach { namedRef -> graph.add(mutNode(namedRef.name).add(Shape.NOTE).addLink(mutNode(namedRef.ref.value))) }
+                .map { it.ref }
+
+        val allCommits = kgit.listCommitsAndParents(oids)
         allCommits.forEach { oid ->
             val commit = kgit.getCommit(oid)
-            print(oid)
-            commit.parentOid?.let { print("Parent $it") }
+            graph.add(mutNode(oid.value).add(Shape.BOX).add(Style.FILLED).add(Label.of(oid.value.substring(0, 10))))
+            commit.parentOid?.let {
+                graph.add(mutNode(oid.value).addLink(mutNode(it.value)))
+            }
         }
+
+        val fileName = "kgit-k/${System.currentTimeMillis()}"
+        Graphviz.fromGraph(graph).render(Format.PNG).toFile(File(fileName))
+
+        echo("Run: open $fileName.png")
     }
 }
