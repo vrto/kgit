@@ -119,12 +119,12 @@ class ObjectDatabaseTest {
         @BeforeEach
         fun initDb() {
             objectDb.init()
+            File("$KGIT_DIR/refs/tags").mkdirs()
+            File("$KGIT_DIR/refs/heads").mkdirs()
         }
 
         @Test
         fun `should iterate refs`() {
-            File("$KGIT_DIR/refs/tags").mkdirs()
-
             val oid1 = objectDb.hashObject("sample data".toByteArray(), TYPE_BLOB)
             val oid2 = objectDb.hashObject("sample data".toByteArray(), TYPE_BLOB)
             File("$KGIT_DIR/refs/tags/tag1").writeText(oid1.value)
@@ -134,16 +134,13 @@ class ObjectDatabaseTest {
             val refs = objectDb.iterateRefs()
 
             assertThat(refs).containsExactly(
-                NamedRef("HEAD", oid1),
-                NamedRef("tags/tag2", oid2),
-                NamedRef("tags/tag1", oid1))
+                NamedRefValue("HEAD", oid1.toDirectRef()),
+                NamedRefValue("tags/tag2", oid2.toDirectRef()),
+                NamedRefValue("tags/tag1", oid1.toDirectRef()))
         }
 
         @Test
         fun `should dereference refs`() {
-            File("$KGIT_DIR/refs/tags").mkdirs()
-            File("$KGIT_DIR/refs/heads").mkdirs()
-
             val oid = objectDb.hashObject("sample data".toByteArray(), TYPE_BLOB)
             File("$KGIT_DIR/refs/tags/tag1").writeText(oid.value)
             File("$KGIT_DIR/refs/heads/branch1").writeText("ref: ${oid.value}")
@@ -157,6 +154,19 @@ class ObjectDatabaseTest {
 
             // recursive symbolic ref
             assertThat(objectDb.getRef("refs/heads/branch2")?.oid).isEqualTo(oid)
+        }
+
+        @Test
+        fun `should opt out dereferencing`() {
+            val oid = objectDb.hashObject("sample data".toByteArray(), TYPE_BLOB)
+            File("$KGIT_DIR/refs/tags/tag1").writeText(oid.value)
+            File("$KGIT_DIR/refs/heads/branch1").writeText("ref: ${oid.value}")
+
+            assertThat(objectDb.getRef("refs/tags/tag1", deref = false))
+                .isEqualTo(RefValue(symbolic = false, oid.value))
+
+            assertThat(objectDb.getRef("refs/heads/branch1", deref = false))
+                .isEqualTo(RefValue(symbolic = true, "ref: ${oid.value}"))
         }
     }
 }

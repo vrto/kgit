@@ -79,11 +79,13 @@ class KGit(private val objectDb: ObjectDatabase) {
         objectDb.updateRef("refs/tags/$tagName", oid.toDirectRef())
     }
 
-    fun getOid(name: String): Oid = objectDb.getRef(name.unaliasHead())?.oid
-        ?: objectDb.getRef("refs/$name")?.oid
-        ?: objectDb.getRef("refs/tags/$name")?.oid
-        ?: objectDb.getRef("refs/heads/$name")?.oid
-        ?: name.toOid()
+    fun getOid(name: String): Oid {
+        val locationsToTry = listOf(name.unaliasHead(), "refs/$name", "refs/tags/$name", "refs/heads/$name")
+        return locationsToTry
+            .mapNotNull { objectDb.getRef(refName = it, deref = false)?.oid }
+            .firstOrNull()
+            ?: name.toOid()
+    }
 
     private fun String.unaliasHead() = when(this) {
         "@" -> "HEAD"

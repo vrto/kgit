@@ -64,20 +64,21 @@ class ObjectDatabase(val workDir: String) {
         updateRef("HEAD", ref)
     }
 
-    fun updateRef(refName: String, ref: RefValue) {
+    fun updateRef(refName: String, ref: RefValue, deref: Boolean = true) {
         require(!ref.symbolic)
 
         File("$workDir/$KGIT_DIR/$refName").apply {
             createNewFileWithinHierarchy()
-            writeText(ref.oidValue)
+            writeText(getRefInternal(ref.oidValue, deref)!!.name)
         }
     }
 
     fun getHead(): RefValue? = getRef("HEAD")
 
-    fun getRef(refName: String): RefValue? = getRefInternal(refName)?.ref?.toDirectRef()
+    fun getRef(refName: String, deref: Boolean = true): RefValue? =
+        getRefInternal(refName, deref)?.ref
 
-    private fun getRefInternal(refName: String): NamedRef? {
+    private fun getRefInternal(refName: String, deref: Boolean): NamedRefValue? {
         // contents of ref file or plain OID
         val value = File("$workDir/$KGIT_DIR/$refName")
             .takeIf { it.exists() }
@@ -85,19 +86,20 @@ class ObjectDatabase(val workDir: String) {
             ?: refName
         return when {
             // recursive symbolic dereferencing
-            value.startsWith("ref:") -> getRefInternal(value.drop("ref: ".length))
-            value.toOidOrNull() == null -> null
-            else -> NamedRef(refName, value.toOid())
+            deref && value.startsWith("ref:") -> getRefInternal(value.drop("ref: ".length), deref = true)
+            !deref && value.startsWith("ref:") -> NamedRefValue(refName, RefValue(symbolic = true, value))
+            value.toOidOrNull() == null -> null // eg. empty HEAD
+            else -> NamedRefValue(refName, RefValue(symbolic = false, value))
         }
     }
 
-    fun iterateRefs(): List<NamedRef> {
+    fun iterateRefs(deref: Boolean = true): List<NamedRefValue> {
         val root = File("$workDir/$REFS_DIR")
         val names = root.walk().filter { it.isFile }.map { it.toRelativeString(root) }
         val refs = names.map {
-            NamedRef(it, getRef("refs/$it")!!.oid)
+            NamedRefValue(it, getRef("refs/$it", deref)!!)
         }
-        return listOf(NamedRef("HEAD", getHead()!!.oid)) + refs
+        return listOf(NamedRefValue("HEAD", getHead()!!)) + refs
     }
 }
 
@@ -106,12 +108,15 @@ class InvalidTypeException(expected: String, actual: String)
 
 inline class Oid(val value: String) {
     override fun toString() = value
-    fun toDirectRef() = RefValue(symbolic = false, oid = this)
+    fun toDirectRef() = RefValue(symbolic = false, value = this.value)
 }
 
-data class RefValue(val symbolic: Boolean = false, val oid: Oid) {
+data class RefValue(val symbolic: Boolean = false, val value: String) {
+    val oid get() = value.toOid()
     val oidValue get() = oid.value
 }
+
+data class NamedRefValue(val name: String, val ref: RefValue)
 
 fun String.toOid(): Oid {
     require(length == 40) {
@@ -124,8 +129,4 @@ fun String.toOidOrNull(): Oid? = try {
     toOid()
 } catch (e: IllegalArgumentException) {
     null
-}
-
-data class NamedRef(val name: String, val ref: Oid) {
-    override fun toString() = "$name $ref"
 }
