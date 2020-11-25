@@ -281,7 +281,7 @@ class KGitTest {
         fun `should create a new branch`() {
             val oid = kgit.commit("First commit")
 
-            assertThat(objectDb.getRef("refs/heads/test-branch")).isNull()
+            assertThat(objectDb.getRef("refs/heads/test-branch")?.oidOrNull).isNull()
             kgit.createBranch("test-branch", oid)
             assertThat(objectDb.getRef("refs/heads/test-branch")?.oid).isEqualTo(oid)
         }

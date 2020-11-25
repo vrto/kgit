@@ -98,7 +98,7 @@ class ObjectDatabaseTest {
 
         @Test
         fun `getHead returns null when nothing is in HEAD`() {
-            val headOid = objectDb.getHead()
+            val headOid = objectDb.getHead()?.oidOrNull
             assertThat(headOid).isNull()
         }
 
@@ -167,6 +167,21 @@ class ObjectDatabaseTest {
 
             assertThat(objectDb.getRef("refs/heads/branch1", deref = false))
                 .isEqualTo(RefValue(symbolic = true, "ref: ${oid.value}"))
+        }
+
+        @Test
+        fun `should write ref`() {
+            val oid = objectDb.hashObject("sample data".toByteArray(), TYPE_BLOB)
+            objectDb.updateRef("refs/tags/tag1", RefValue(value = oid.value))
+            assertThat(File("$KGIT_DIR/refs/tags/tag1").readText()).isEqualTo(oid.value)
+        }
+
+        @Test
+        fun `should write symbolic ref`() {
+            val oid = objectDb.hashObject("sample data".toByteArray(), TYPE_BLOB)
+            objectDb.updateRef("refs/tags/tag1", RefValue(value = oid.value))
+            objectDb.updateRef("refs/heads/branch1", RefValue(symbolic = true, value = "refs/tags/tag1"))
+            assertThat(File("$KGIT_DIR/refs/heads/branch1").readText()).isEqualTo("ref: refs/tags/tag1")
         }
     }
 }

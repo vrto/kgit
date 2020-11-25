@@ -64,12 +64,13 @@ class ObjectDatabase(val workDir: String) {
         updateRef("HEAD", ref)
     }
 
-    fun updateRef(refName: String, ref: RefValue, deref: Boolean = true) {
-        require(!ref.symbolic)
-
-        File("$workDir/$KGIT_DIR/$refName").apply {
+    fun updateRef(refName: String, refValue: RefValue, deref: Boolean = true) {
+        val ref = getRefInternal(refName, deref)!!.name
+        val toSave = if (refValue.symbolic) "ref: ${refValue.value}" else refValue.value
+        val refPath = "$workDir/$KGIT_DIR/$ref"
+        File(refPath).apply {
             createNewFileWithinHierarchy()
-            writeText(getRefInternal(ref.oidValue, deref)!!.name)
+            writeText(toSave)
         }
     }
 
@@ -88,7 +89,6 @@ class ObjectDatabase(val workDir: String) {
             // recursive symbolic dereferencing
             deref && value.startsWith("ref:") -> getRefInternal(value.drop("ref: ".length), deref = true)
             !deref && value.startsWith("ref:") -> NamedRefValue(refName, RefValue(symbolic = true, value))
-            value.toOidOrNull() == null -> null // eg. empty HEAD
             else -> NamedRefValue(refName, RefValue(symbolic = false, value))
         }
     }
@@ -112,7 +112,9 @@ inline class Oid(val value: String) {
 }
 
 data class RefValue(val symbolic: Boolean = false, val value: String) {
+    // only to be called when we know we're dealing with OID, as the value can be a reference
     val oid get() = value.toOid()
+    val oidOrNull get() = value.toOidOrNull()
     val oidValue get() = oid.value
 }
 
@@ -120,7 +122,7 @@ data class NamedRefValue(val name: String, val ref: RefValue)
 
 fun String.toOid(): Oid {
     require(length == 40) {
-        "OID must be in SHA-1"
+        "OID must be in SHA-1, but was: $this"
     }
     return Oid(this)
 }

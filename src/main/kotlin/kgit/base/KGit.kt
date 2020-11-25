@@ -50,7 +50,7 @@ class KGit(private val objectDb: ObjectDatabase) {
 
     fun commit(message: String): Oid {
         val treeOid = writeTree()
-        val parent = objectDb.getHead()?.oid
+        val parent = objectDb.getHead()?.oidOrNull
         val commit = Commit(treeOid, parent, message)
         return objectDb.hashObject(commit.toString().encodeToByteArray(), TYPE_COMMIT).also {
             objectDb.setHead(it.toDirectRef())
@@ -82,7 +82,7 @@ class KGit(private val objectDb: ObjectDatabase) {
     fun getOid(name: String): Oid {
         val locationsToTry = listOf(name.unaliasHead(), "refs/$name", "refs/tags/$name", "refs/heads/$name")
         return locationsToTry
-            .mapNotNull { objectDb.getRef(refName = it, deref = false)?.oid }
+            .mapNotNull { objectDb.getRef(refName = it, deref = false)?.oidOrNull }
             .firstOrNull()
             ?: name.toOid()
     }
