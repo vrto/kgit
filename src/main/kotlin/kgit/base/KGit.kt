@@ -83,11 +83,7 @@ class KGit(private val objectDb: ObjectDatabase) {
         ?: objectDb.getRef("refs/$name")?.oid
         ?: objectDb.getRef("refs/tags/$name")?.oid
         ?: objectDb.getRef("refs/heads/$name")?.oid
-        ?: name.toOid().also {
-            require(it.value.length == 40) {
-                "OID not in  SHA1"
-            }
-        }
+        ?: name.toOid()
 
     private fun String.unaliasHead() = when(this) {
         "@" -> "HEAD"

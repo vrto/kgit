@@ -75,17 +75,20 @@ class ObjectDatabase(val workDir: String) {
 
     fun getHead(): RefValue? = getRef("HEAD")
 
-    fun getRef(refName: String): RefValue? {
-        val ref = File("$workDir/$KGIT_DIR/$refName")
-        return when {
-            ref.exists() -> ref.readText().dereferenceOid().toDirectRef()
-            else -> null
-        }
-    }
+    fun getRef(refName: String): RefValue? = getRefInternal(refName)?.ref?.toDirectRef()
 
-    private fun String.dereferenceOid(): Oid = when {
-        this.startsWith("ref:") ->  this.drop("ref: ".length).toOid()
-        else -> this.toOid()
+    private fun getRefInternal(refName: String): NamedRef? {
+        // contents of ref file or plain OID
+        val value = File("$workDir/$KGIT_DIR/$refName")
+            .takeIf { it.exists() }
+            ?.readText()
+            ?: refName
+        return when {
+            // recursive symbolic dereferencing
+            value.startsWith("ref:") -> getRefInternal(value.drop("ref: ".length))
+            value.toOidOrNull() == null -> null
+            else -> NamedRef(refName, value.toOid())
+        }
     }
 
     fun iterateRefs(): List<NamedRef> {
@@ -110,7 +113,18 @@ data class RefValue(val symbolic: Boolean = false, val oid: Oid) {
     val oidValue get() = oid.value
 }
 
-fun String.toOid() = Oid(this)
+fun String.toOid(): Oid {
+    require(length == 40) {
+        "OID must be in SHA-1"
+    }
+    return Oid(this)
+}
+
+fun String.toOidOrNull(): Oid? = try {
+    toOid()
+} catch (e: IllegalArgumentException) {
+    null
+}
 
 data class NamedRef(val name: String, val ref: Oid) {
     override fun toString() = "$name $ref"

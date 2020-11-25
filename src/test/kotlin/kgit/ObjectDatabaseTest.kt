@@ -140,16 +140,23 @@ class ObjectDatabaseTest {
         }
 
         @Test
-        fun `should dereference symbolic ref`() {
+        fun `should dereference refs`() {
             File("$KGIT_DIR/refs/tags").mkdirs()
             File("$KGIT_DIR/refs/heads").mkdirs()
 
             val oid = objectDb.hashObject("sample data".toByteArray(), TYPE_BLOB)
             File("$KGIT_DIR/refs/tags/tag1").writeText(oid.value)
             File("$KGIT_DIR/refs/heads/branch1").writeText("ref: ${oid.value}")
+            File("$KGIT_DIR/refs/heads/branch2").writeText("ref: refs/heads/branch1")
 
+            // direct ref
             assertThat(objectDb.getRef("refs/tags/tag1")?.oid).isEqualTo(oid)
+
+            // symbolic ref
             assertThat(objectDb.getRef("refs/heads/branch1")?.oid).isEqualTo(oid)
+
+            // recursive symbolic ref
+            assertThat(objectDb.getRef("refs/heads/branch2")?.oid).isEqualTo(oid)
         }
     }
 }
