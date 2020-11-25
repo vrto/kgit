@@ -90,7 +90,7 @@ class ObjectDatabaseTest {
         fun `setHead stores the OID into HEAD`() {
             val oid = objectDb.hashObject("sample data".toByteArray(), TYPE_BLOB)
 
-            objectDb.setHead(oid)
+            objectDb.setHead(oid.toDirectRef())
 
             assertFileExists(HEAD_DIR)
             assertThat(File(HEAD_DIR).readText().toOid()).isEqualTo(oid)
@@ -106,9 +106,9 @@ class ObjectDatabaseTest {
         fun `getHead grabs OID in HEAD`() {
             val oid = objectDb.hashObject("sample data".toByteArray(), TYPE_BLOB)
 
-            objectDb.setHead(oid)
+            objectDb.setHead(oid.toDirectRef())
 
-            val headOid = objectDb.getHead()
+            val headOid = objectDb.getHead()?.oid
             assertThat(headOid).isEqualTo(oid)
         }
     }
@@ -129,7 +129,7 @@ class ObjectDatabaseTest {
             val oid2 = objectDb.hashObject("sample data".toByteArray(), TYPE_BLOB)
             File("$KGIT_DIR/refs/tags/tag1").writeText(oid1.value)
             File("$KGIT_DIR/refs/tags/tag2").writeText(oid2.value)
-            objectDb.setHead(oid1)
+            objectDb.setHead(oid1.toDirectRef())
 
             val refs = objectDb.iterateRefs()
 
@@ -148,8 +148,8 @@ class ObjectDatabaseTest {
             File("$KGIT_DIR/refs/tags/tag1").writeText(oid.value)
             File("$KGIT_DIR/refs/heads/branch1").writeText("ref: ${oid.value}")
 
-            assertThat(objectDb.getRef("refs/tags/tag1")).isEqualTo(oid)
-            assertThat(objectDb.getRef("refs/heads/branch1")).isEqualTo(oid)
+            assertThat(objectDb.getRef("refs/tags/tag1")?.oid).isEqualTo(oid)
+            assertThat(objectDb.getRef("refs/heads/branch1")?.oid).isEqualTo(oid)
         }
     }
 }

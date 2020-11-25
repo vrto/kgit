@@ -60,23 +60,25 @@ class ObjectDatabase(val workDir: String) {
         return String(allBytes.filterIndexed { index, _ -> index > separatorPos }.toByteArray())
     }
 
-    fun setHead(oid: Oid) {
-        updateRef("HEAD", oid)
+    fun setHead(ref: RefValue) {
+        updateRef("HEAD", ref)
     }
 
-    fun updateRef(refName: String, oid: Oid) {
+    fun updateRef(refName: String, ref: RefValue) {
+        require(!ref.symbolic)
+
         File("$workDir/$KGIT_DIR/$refName").apply {
             createNewFileWithinHierarchy()
-            writeText(oid.value)
+            writeText(ref.oidValue)
         }
     }
 
-    fun getHead(): Oid? = getRef("HEAD")
+    fun getHead(): RefValue? = getRef("HEAD")
 
-    fun getRef(refName: String): Oid? {
+    fun getRef(refName: String): RefValue? {
         val ref = File("$workDir/$KGIT_DIR/$refName")
         return when {
-            ref.exists() -> ref.readText().dereferenceOid()
+            ref.exists() -> ref.readText().dereferenceOid().toDirectRef()
             else -> null
         }
     }
@@ -90,9 +92,9 @@ class ObjectDatabase(val workDir: String) {
         val root = File("$workDir/$REFS_DIR")
         val names = root.walk().filter { it.isFile }.map { it.toRelativeString(root) }
         val refs = names.map {
-            NamedRef(it, getRef("refs/$it")!!)
+            NamedRef(it, getRef("refs/$it")!!.oid)
         }
-        return listOf(NamedRef("HEAD", getHead()!!)) + refs
+        return listOf(NamedRef("HEAD", getHead()!!.oid)) + refs
     }
 }
 
@@ -101,6 +103,11 @@ class InvalidTypeException(expected: String, actual: String)
 
 inline class Oid(val value: String) {
     override fun toString() = value
+    fun toDirectRef() = RefValue(symbolic = false, oid = this)
+}
+
+data class RefValue(val symbolic: Boolean = false, val oid: Oid) {
+    val oidValue get() = oid.value
 }
 
 fun String.toOid() = Oid(this)

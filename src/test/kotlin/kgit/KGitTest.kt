@@ -142,11 +142,11 @@ class KGitTest {
 
             modifyCurrentWorkingDirFiles()
             val next = kgit.commit("Second commit")
-            assertThat(objectDb.getHead()).isEqualTo(next)
+            assertThat(objectDb.getHead()?.oid).isEqualTo(next)
 
             kgit.checkout(orig)
             assertFilesRestored()
-            assertThat(objectDb.getHead()).isEqualTo(orig)
+            assertThat(objectDb.getHead()?.oid).isEqualTo(orig)
         }
     }
 
@@ -160,7 +160,7 @@ class KGitTest {
             kgit.tag("test-tag", oid)
 
             val ref = objectDb.getRef("refs/tags/test-tag")
-            assertThat(ref).isEqualTo(oid)
+            assertThat(ref?.oid).isEqualTo(oid)
         }
 
         @Test
@@ -170,7 +170,7 @@ class KGitTest {
             kgit.tag("nested/tag", oid)
 
             val ref = objectDb.getRef("refs/tags/nested/tag")
-            assertThat(ref).isEqualTo(oid)
+            assertThat(ref?.oid).isEqualTo(oid)
         }
     }
 
@@ -213,7 +213,7 @@ class KGitTest {
 
         @Test
         fun `should translate '@' to HEAD`() {
-            assertThat(kgit.getOid("@")).isEqualTo(objectDb.getHead())
+            assertThat(kgit.getOid("@")).isEqualTo(objectDb.getHead()?.oid)
         }
     }
 
@@ -283,7 +283,7 @@ class KGitTest {
 
             assertThat(objectDb.getRef("refs/heads/test-branch")).isNull()
             kgit.createBranch("test-branch", oid)
-            assertThat(objectDb.getRef("refs/heads/test-branch")).isEqualTo(oid)
+            assertThat(objectDb.getRef("refs/heads/test-branch")?.oid).isEqualTo(oid)
         }
     }
 }

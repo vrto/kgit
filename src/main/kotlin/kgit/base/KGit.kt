@@ -50,10 +50,10 @@ class KGit(private val objectDb: ObjectDatabase) {
 
     fun commit(message: String): Oid {
         val treeOid = writeTree()
-        val parent = objectDb.getHead()
+        val parent = objectDb.getHead()?.oid
         val commit = Commit(treeOid, parent, message)
         return objectDb.hashObject(commit.toString().encodeToByteArray(), TYPE_COMMIT).also {
-            objectDb.setHead(it)
+            objectDb.setHead(it.toDirectRef())
         }
     }
 
@@ -72,17 +72,17 @@ class KGit(private val objectDb: ObjectDatabase) {
     fun checkout(oid: Oid) {
         val commit = getCommit(oid)
         readTree(commit.treeOid, "${objectDb.workDir}/")
-        objectDb.setHead(oid)
+        objectDb.setHead(oid.toDirectRef())
     }
 
     fun tag(tagName: String, oid: Oid) {
-        objectDb.updateRef("refs/tags/$tagName", oid)
+        objectDb.updateRef("refs/tags/$tagName", oid.toDirectRef())
     }
 
-    fun getOid(name: String): Oid = objectDb.getRef(name.unaliasHead())
-        ?: objectDb.getRef("refs/$name")
-        ?: objectDb.getRef("refs/tags/$name")
-        ?: objectDb.getRef("refs/heads/$name")
+    fun getOid(name: String): Oid = objectDb.getRef(name.unaliasHead())?.oid
+        ?: objectDb.getRef("refs/$name")?.oid
+        ?: objectDb.getRef("refs/tags/$name")?.oid
+        ?: objectDb.getRef("refs/heads/$name")?.oid
         ?: name.toOid().also {
             require(it.value.length == 40) {
                 "OID not in  SHA1"
@@ -112,6 +112,6 @@ class KGit(private val objectDb: ObjectDatabase) {
     }
 
     fun createBranch(name: String, startPoint: Oid) {
-        objectDb.updateRef("refs/heads/$name", startPoint)
+        objectDb.updateRef("refs/heads/$name", startPoint.toDirectRef())
     }
 }
