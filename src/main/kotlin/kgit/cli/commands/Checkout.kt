@@ -7,11 +7,10 @@ import kgit.base.KGit
 class Checkout(private val kgit: KGit)
     : CliktCommand(help = "Read tree using the given OID and move HEAD") {
 
-    private val oid: String by argument(help = "OID to checkout")
+    private val name: String by argument(help = "OID/branch to checkout")
 
     override fun run() {
-        val resolved = kgit.getOid(oid)
-//        kgit.checkout(resolved)
-        //TODO
+        kgit.checkout(name)
+        echo("Switched to $name")
     }
 }
