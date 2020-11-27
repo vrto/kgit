@@ -77,9 +77,9 @@ class ObjectDatabase(val workDir: String) {
         }
     }
 
-    fun getHead(deref: Boolean = true): RefValue? = getRef("HEAD", deref)
+    fun getHead(deref: Boolean = true): RefValue = getRef("HEAD", deref)
 
-    fun getRef(refName: String, deref: Boolean = true): RefValue? =
+    fun getRef(refName: String, deref: Boolean = true): RefValue =
         getRefInternal(refName, deref).ref
 
     private fun getRefInternal(refName: String, deref: Boolean): NamedRefValue {
@@ -100,9 +100,9 @@ class ObjectDatabase(val workDir: String) {
         val root = File("$workDir/$REFS_DIR")
         val names = root.walk().filter { it.isFile }.map { it.toRelativeString(root) }
         val refs = names.map {
-            NamedRefValue(it, getRef("refs/$it", deref)!!)
+            NamedRefValue(it, getRef("refs/$it", deref))
         }
-        return listOf(NamedRefValue("HEAD", getHead()!!)) + refs
+        return listOf(NamedRefValue("HEAD", getHead())) + refs
     }
 }
 

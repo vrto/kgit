@@ -23,13 +23,13 @@ class InitTest {
     @Test
     fun `freshly initialized repository has an empty master branch`() {
         // detached head pointing nowhere
-        assertThat(objectDb.getHead()?.oidOrNull).isNull()
-        assertThat(objectDb.getHead(deref = false)?.value).isEqualTo("HEAD")
+        assertThat(objectDb.getHead().oidOrNull).isNull()
+        assertThat(objectDb.getHead(deref = false).value).isEqualTo("HEAD")
 
         kgit.init()
 
         // empty 'master' branch
-        assertThat(objectDb.getHead()?.oidOrNull).isNull()
-        assertThat(objectDb.getHead(deref = false)?.value).isEqualTo("ref: refs/heads/master")
+        assertThat(objectDb.getHead().oidOrNull).isNull()
+        assertThat(objectDb.getHead(deref = false).value).isEqualTo("ref: refs/heads/master")
     }
 }

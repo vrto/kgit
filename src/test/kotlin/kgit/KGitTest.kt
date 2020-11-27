@@ -142,11 +142,11 @@ class KGitTest {
 
             modifyCurrentWorkingDirFiles()
             val next = kgit.commit("Second commit")
-            assertThat(objectDb.getHead()?.oid).isEqualTo(next)
+            assertThat(objectDb.getHead().oid).isEqualTo(next)
 
             kgit.checkout(orig.value)
             assertFilesRestored()
-            assertThat(objectDb.getHead()?.oid).isEqualTo(orig)
+            assertThat(objectDb.getHead().oid).isEqualTo(orig)
         }
 
         @Test
@@ -159,7 +159,7 @@ class KGitTest {
             kgit.checkout("test-branch")
 
             assertFilesRestored()
-            assertThat(objectDb.getHead(deref = false)?.value).isEqualTo("ref: refs/heads/test-branch")
+            assertThat(objectDb.getHead(deref = false).value).isEqualTo("ref: refs/heads/test-branch")
         }
     }
 
@@ -173,7 +173,7 @@ class KGitTest {
             kgit.tag("test-tag", oid)
 
             val ref = objectDb.getRef("refs/tags/test-tag")
-            assertThat(ref?.oid).isEqualTo(oid)
+            assertThat(ref.oid).isEqualTo(oid)
         }
 
         @Test
@@ -183,7 +183,7 @@ class KGitTest {
             kgit.tag("nested/tag", oid)
 
             val ref = objectDb.getRef("refs/tags/nested/tag")
-            assertThat(ref?.oid).isEqualTo(oid)
+            assertThat(ref.oid).isEqualTo(oid)
         }
     }
 
@@ -226,7 +226,7 @@ class KGitTest {
 
         @Test
         fun `should translate '@' to HEAD`() {
-            assertThat(kgit.getOid("@")).isEqualTo(objectDb.getHead()?.oid)
+            assertThat(kgit.getOid("@")).isEqualTo(objectDb.getHead().oid)
         }
     }
 
@@ -294,9 +294,9 @@ class KGitTest {
         fun `should create a new branch`() {
             val oid = kgit.commit("First commit")
 
-            assertThat(objectDb.getRef("refs/heads/test-branch")?.oidOrNull).isNull()
+            assertThat(objectDb.getRef("refs/heads/test-branch").oidOrNull).isNull()
             kgit.createBranch("test-branch", oid)
-            assertThat(objectDb.getRef("refs/heads/test-branch")?.oid).isEqualTo(oid)
+            assertThat(objectDb.getRef("refs/heads/test-branch").oid).isEqualTo(oid)
         }
     }
 }
