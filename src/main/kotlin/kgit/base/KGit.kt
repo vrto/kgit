@@ -69,10 +69,16 @@ class KGit(private val objectDb: ObjectDatabase) {
         return Commit(treeOid, parentOid, msg)
     }
 
-    fun checkout(oid: Oid) {
+    fun checkout(name: String) {
+        val oid = getOid(name)
         val commit = getCommit(oid)
         readTree(commit.treeOid, "${objectDb.workDir}/")
-        objectDb.setHead(oid.toDirectRef())
+
+        if (name.isBranch()) {
+            objectDb.setHead(RefValue(symbolic = true, value = "refs/heads/$name"))
+        } else {
+            objectDb.setHead(oid.toDirectRef())
+        }
     }
 
     fun tag(tagName: String, oid: Oid) {
@@ -112,4 +118,6 @@ class KGit(private val objectDb: ObjectDatabase) {
     fun createBranch(name: String, startPoint: Oid) {
         objectDb.updateRef("refs/heads/$name", startPoint.toDirectRef())
     }
+
+    private fun String.isBranch() = objectDb.getRef("refs/heads/$this")?.oidOrNull != null
 }

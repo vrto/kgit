@@ -60,12 +60,12 @@ class ObjectDatabase(val workDir: String) {
         return String(allBytes.filterIndexed { index, _ -> index > separatorPos }.toByteArray())
     }
 
-    fun setHead(ref: RefValue) {
-        updateRef("HEAD", ref)
+    fun setHead(ref: RefValue, deref: Boolean = true) {
+        updateRef("HEAD", ref, deref)
     }
 
     fun updateRef(refName: String, refValue: RefValue, deref: Boolean = true) {
-        val ref = getRefInternal(refName, deref)!!.name
+        val ref = getRefInternal(refName, deref).name
         val toSave = if (refValue.symbolic) "ref: ${refValue.value}" else refValue.value
         val refPath = "$workDir/$KGIT_DIR/$ref"
         File(refPath).apply {
@@ -74,12 +74,12 @@ class ObjectDatabase(val workDir: String) {
         }
     }
 
-    fun getHead(): RefValue? = getRef("HEAD")
+    fun getHead(deref: Boolean = true): RefValue? = getRef("HEAD", deref)
 
     fun getRef(refName: String, deref: Boolean = true): RefValue? =
-        getRefInternal(refName, deref)?.ref
+        getRefInternal(refName, deref).ref
 
-    private fun getRefInternal(refName: String, deref: Boolean): NamedRefValue? {
+    private fun getRefInternal(refName: String, deref: Boolean): NamedRefValue {
         // contents of ref file or plain OID
         val value = File("$workDir/$KGIT_DIR/$refName")
             .takeIf { it.exists() }

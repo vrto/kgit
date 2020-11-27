@@ -11,6 +11,7 @@ class Checkout(private val kgit: KGit)
 
     override fun run() {
         val resolved = kgit.getOid(oid)
-        kgit.checkout(resolved)
+//        kgit.checkout(resolved)
+        //TODO
     }
 }
