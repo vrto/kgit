@@ -5,6 +5,11 @@ import java.io.File
 
 class KGit(private val objectDb: ObjectDatabase) {
 
+    fun init() {
+        objectDb.init()
+        objectDb.updateRef("HEAD", RefValue(symbolic = true, value = "refs/heads/master"))
+    }
+
     fun writeTree(directory: String = objectDb.workDir): Oid {
         val children = File(directory).listFiles()!!
         val tree = children

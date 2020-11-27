@@ -16,6 +16,9 @@ const val TYPE_COMMIT = "commit"
 
 private const val nullByte = 0.toChar().toByte()
 
+/**
+ * Handles everything that directly touches the disk.
+ */
 class ObjectDatabase(val workDir: String) {
 
     fun init() {

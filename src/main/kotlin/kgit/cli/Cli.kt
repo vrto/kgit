@@ -12,7 +12,7 @@ private val kgit = KGit(objectDb)
 
 fun main(args: Array<String>) {
     KGitCli()
-        .subcommands(Init(objectDb),
+        .subcommands(Init(kgit),
                      HashObject(objectDb),
                      CatFile(objectDb, kgit),
                      WriteTree(kgit),
