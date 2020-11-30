@@ -124,5 +124,13 @@ class KGit(private val objectDb: ObjectDatabase) {
         objectDb.updateRef("refs/heads/$name", startPoint.toDirectRef())
     }
 
+    fun getBranchName(): String? {
+        val head = objectDb.getRef("HEAD", deref = false)
+        return when {
+            head.symbolic -> head.value.drop("ref: refs/heads/".length)
+            else -> null
+        }
+    }
+
     private fun String.isBranch() = objectDb.getRef("refs/heads/$this").oidOrNull != null
 }

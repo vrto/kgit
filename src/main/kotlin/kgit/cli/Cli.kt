@@ -12,17 +12,19 @@ private val kgit = KGit(objectDb)
 
 fun main(args: Array<String>) {
     KGitCli()
-        .subcommands(Init(kgit),
-                     HashObject(objectDb),
-                     CatFile(objectDb, kgit),
-                     WriteTree(kgit),
-                     ReadTree(kgit),
-                     CommitCmd(kgit),
-                     Log(kgit),
-                     Checkout(kgit),
-                     Tag(kgit),
-                     K(objectDb, kgit),
-                     Branch(kgit),
+        .subcommands(
+            Init(kgit),
+            HashObject(objectDb),
+            CatFile(objectDb, kgit),
+            WriteTree(kgit),
+            ReadTree(kgit),
+            CommitCmd(kgit),
+            Log(kgit),
+            Checkout(kgit),
+            Tag(kgit),
+            K(objectDb, kgit),
+            Branch(kgit),
+            Status(kgit),
         ).main(args)
 }
 

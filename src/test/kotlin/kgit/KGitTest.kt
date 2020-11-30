@@ -298,5 +298,16 @@ class KGitTest {
             kgit.createBranch("test-branch", oid)
             assertThat(objectDb.getRef("refs/heads/test-branch").oid).isEqualTo(oid)
         }
+
+        @Test
+        fun `should return branch name`() {
+            val oid = kgit.commit("First commit")
+            assertThat(kgit.getBranchName()).isNull()
+
+            kgit.createBranch("test-branch", oid)
+            kgit.checkout("test-branch")
+
+            assertThat(kgit.getBranchName()).isEqualTo("test-branch")
+        }
     }
 }
