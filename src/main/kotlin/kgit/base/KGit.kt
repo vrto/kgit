@@ -80,9 +80,9 @@ class KGit(private val objectDb: ObjectDatabase) {
         readTree(commit.treeOid, "${objectDb.workDir}/")
 
         if (name.isBranch()) {
-            objectDb.setHead(RefValue(symbolic = true, value = "refs/heads/$name"))
+            objectDb.setHead(RefValue(symbolic = true, value = "refs/heads/$name"), deref = false)
         } else {
-            objectDb.setHead(oid.toDirectRef())
+            objectDb.setHead(oid.toDirectRef(), deref = false)
         }
     }
 
@@ -93,7 +93,7 @@ class KGit(private val objectDb: ObjectDatabase) {
     fun getOid(name: String): Oid {
         val locationsToTry = listOf(name.unaliasHead(), "refs/$name", "refs/tags/$name", "refs/heads/$name")
         return locationsToTry
-            .mapNotNull { objectDb.getRef(refName = it, deref = false).oidOrNull }
+            .mapNotNull { objectDb.getRef(refName = it, deref = true).oidOrNull }
             .firstOrNull()
             ?: name.toOid()
     }
@@ -131,6 +131,11 @@ class KGit(private val objectDb: ObjectDatabase) {
             else -> null
         }
     }
+
+    fun listBranches(): List<String> = objectDb.iterateRefs()
+        .map { it.name }
+        .filter { it.startsWith("heads/") }
+        .map { it.drop("heads/".length) }
 
     private fun String.isBranch() = objectDb.getRef("refs/heads/$this").oidOrNull != null
 }

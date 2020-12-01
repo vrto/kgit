@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import java.io.File
 import java.nio.file.Path
+import kotlin.properties.Delegates
 
 class KGitTest {
 
@@ -210,7 +211,6 @@ class KGitTest {
             val resolvedViaRoot = kgit.getOid("refs/tags/tag-to-resolve")
             val resolvedViaRefs = kgit.getOid("tags/tag-to-resolve")
             val resolvedViaTags = kgit.getOid("tag-to-resolve")
-//            val resolvedViaHeads = kgit.getOid("tag-to-resolve") TBD
 
             assertThat(resolvedViaRoot).isEqualTo(oid)
             assertThat(resolvedViaRefs).isEqualTo(oid)
@@ -290,10 +290,15 @@ class KGitTest {
     @Nested
     inner class Branching {
 
+        var oid: Oid by Delegates.notNull()
+
+        @BeforeEach
+        fun createFirstCommit() {
+            oid = kgit.commit("First commit")
+        }
+
         @Test
         fun `should create a new branch`() {
-            val oid = kgit.commit("First commit")
-
             assertThat(objectDb.getRef("refs/heads/test-branch").oidOrNull).isNull()
             kgit.createBranch("test-branch", oid)
             assertThat(objectDb.getRef("refs/heads/test-branch").oid).isEqualTo(oid)
@@ -301,13 +306,23 @@ class KGitTest {
 
         @Test
         fun `should return branch name`() {
-            val oid = kgit.commit("First commit")
             assertThat(kgit.getBranchName()).isNull()
 
             kgit.createBranch("test-branch", oid)
             kgit.checkout("test-branch")
 
             assertThat(kgit.getBranchName()).isEqualTo("test-branch")
+        }
+
+        @Test
+        fun `should list branches`() {
+            assertThat(kgit.listBranches()).isEmpty()
+
+            kgit.createBranch("test-branch", oid)
+            assertThat(kgit.listBranches()).containsExactly("test-branch")
+
+            kgit.createBranch("test-branch2", oid)
+            assertThat(kgit.listBranches()).containsOnly("test-branch", "test-branch2")
         }
     }
 }
