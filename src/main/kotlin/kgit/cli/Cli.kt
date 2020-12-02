@@ -19,7 +19,7 @@ fun main(args: Array<String>) {
             WriteTree(kgit),
             ReadTree(kgit),
             CommitCmd(kgit),
-            Log(kgit),
+            Log(objectDb, kgit),
             Checkout(kgit),
             Tag(kgit),
             K(objectDb, kgit),
