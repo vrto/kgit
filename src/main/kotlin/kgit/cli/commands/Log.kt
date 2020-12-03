@@ -33,7 +33,7 @@ class Log(private val objectDb: ObjectDatabase, private val kgit: KGit)
     }
 
     private fun Commit.prettyPrint(oid: Oid, refs: Map<String, MutableList<String>>) {
-        val refsOfThisCommit = refs.getValue(oid.value).joinToString(prefix = "(", separator = ", ", postfix = ")")
+        val refsOfThisCommit = refs[oid.value]?.joinToString(prefix = "(", separator = ", ", postfix = ")") ?: ""
         println("commit $oid $refsOfThisCommit")
         println("\t$message")
         println("")
