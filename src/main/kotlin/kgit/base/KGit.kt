@@ -138,4 +138,8 @@ class KGit(private val objectDb: ObjectDatabase) {
         .map { it.drop("heads/".length) }
 
     private fun String.isBranch() = objectDb.getRef("refs/heads/$this").oidOrNull != null
+
+    fun reset(oid: Oid) {
+        objectDb.setHead(oid.toDirectRef())
+    }
 }

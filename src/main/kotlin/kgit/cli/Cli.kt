@@ -25,6 +25,7 @@ fun main(args: Array<String>) {
             K(objectDb, kgit),
             Branch(kgit),
             Status(kgit),
+            Reset(kgit),
         ).main(args)
 }
 
