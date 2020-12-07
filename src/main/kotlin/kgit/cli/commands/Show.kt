@@ -14,6 +14,12 @@ class Show(private val kgit: KGit) : CliktCommand(help = "Print commit message")
         kgit.getOid(oid ?: "@").let {
             val commit = kgit.getCommit(it)
             commit.prettyPrint(it)
+
+            if (commit.parentOid != null) {
+                val parentTree = commit.parentOid.let(kgit::getCommit).treeOid
+                val changedPaths = kgit.diffTrees(kgit.getTree(parentTree), kgit.getTree(commit.treeOid))
+                changedPaths.forEach(::println)
+            }
         }
     }
 }

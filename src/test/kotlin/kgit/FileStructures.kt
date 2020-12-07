@@ -33,6 +33,10 @@ fun createDynamicTestStructure(): File {
     return dirToWrite
 }
 
+fun modifyOneFile() {
+    File("$DYNAMIC_STRUCTURE/flat.txt").writeText("changed content")
+}
+
 fun modifyCurrentWorkingDirFiles() {
     File("$DYNAMIC_STRUCTURE/flat.txt").writeText("changed content")
     File("$DYNAMIC_STRUCTURE/subdir/nested.txt").writeText("changed nested content")

@@ -142,4 +142,12 @@ class KGit(private val objectDb: ObjectDatabase) {
     fun reset(oid: Oid) {
         objectDb.setHead(oid.toDirectRef())
     }
+
+    fun diffTrees(from: Tree, to: Tree): List<String> {
+        val fromState = from.parseState("./", ::getTree).map { it.path to it.oid }.toMap()
+        val toState = to.parseState("./", ::getTree).map { it.path to it.oid }.toMap()
+        val allPaths = (fromState.map { it.key } + toState.map { it.key }).toSet()
+        return allPaths.filter { fromState[it] != toState[it] }
+    }
+
 }
