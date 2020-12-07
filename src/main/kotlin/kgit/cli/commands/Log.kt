@@ -3,8 +3,8 @@ package kgit.cli.commands
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.optional
-import kgit.base.Commit
 import kgit.base.KGit
+import kgit.cli.prettyPrint
 import kgit.data.ObjectDatabase
 import kgit.data.Oid
 
@@ -30,12 +30,5 @@ class Log(private val objectDb: ObjectDatabase, private val kgit: KGit)
             refs.getOrPut(it.ref.value, ::mutableListOf).add(it.name)
         }
         return refs
-    }
-
-    private fun Commit.prettyPrint(oid: Oid, refs: Map<String, MutableList<String>>) {
-        val refsOfThisCommit = refs[oid.value]?.joinToString(prefix = "(", separator = ", ", postfix = ")") ?: ""
-        println("commit $oid $refsOfThisCommit")
-        println("\t$message")
-        println("")
     }
 }

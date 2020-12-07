@@ -26,6 +26,7 @@ fun main(args: Array<String>) {
             Branch(kgit),
             Status(kgit),
             Reset(kgit),
+            Show(kgit),
         ).main(args)
 }
 
