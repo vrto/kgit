@@ -1,11 +1,14 @@
 package kgit
 
 import assertk.assertThat
-import assertk.assertions.containsOnly
 import assertk.assertions.isEmpty
+import assertk.assertions.isEqualTo
+import kgit.diff.Diff
 import org.junit.jupiter.api.Test
 
 class DiffsTest : DynamicStructureAware() {
+
+    private val diff = Diff(kgit, objectDb)
 
     @Test
     fun `no changes should result in an empty diff`() {
@@ -13,12 +16,12 @@ class DiffsTest : DynamicStructureAware() {
         val from = kgit.getTree(oid)
         val to = kgit.getTree(oid)
 
-        val changedPaths = kgit.diffTrees(from, to)
+        val changedPaths = diff.diffTrees(from, to)
         assertThat(changedPaths).isEmpty()
     }
 
     @Test
-    fun `should list a changed path`() {
+    fun `should show diff for one changed file`() {
         val orig = kgit.writeTree()
         modifyOneFile()
         val changed = kgit.writeTree()
@@ -26,13 +29,21 @@ class DiffsTest : DynamicStructureAware() {
         val from = kgit.getTree(orig)
         val to = kgit.getTree(changed)
 
-        val changedPaths = kgit.diffTrees(from, to)
+        val diffLines = diff.diffTrees(from, to)
 
-        assertThat(changedPaths).containsOnly("./flat.txt")
+        assertThat(diffLines.joinToString(separator = "\n")).isEqualTo(
+            """
+            --- ./flat.txt
+            +++ ./flat.txt
+            @@ -1,1 +1,1 @@
+            -orig content
+            +changed content
+            """.trimIndent()
+        )
     }
 
     @Test
-    fun `should list changed paths`() {
+    fun `should diff a bunch of changed files`() {
         val orig = kgit.writeTree()
         modifyCurrentWorkingDirFiles()
         val changed = kgit.writeTree()
@@ -40,11 +51,25 @@ class DiffsTest : DynamicStructureAware() {
         val from = kgit.getTree(orig)
         val to = kgit.getTree(changed)
 
-        val changedPaths = kgit.diffTrees(from, to)
+        val diffLines = diff.diffTrees(from, to)
 
-        assertThat(changedPaths).containsOnly(
-            "./flat.txt",
-            "./subdir/nested.txt",
-            "./new_file")
+        assertThat(diffLines.joinToString(separator = "\n")).isEqualTo(
+            """
+            --- ./flat.txt
+            +++ ./flat.txt
+            @@ -1,1 +1,1 @@
+            -orig content
+            +changed content
+            --- ./subdir/nested.txt
+            +++ ./subdir/nested.txt
+            @@ -1,1 +1,1 @@
+            -orig nested content
+            +changed nested content
+            --- ./new_file
+            +++ ./new_file
+            @@ -1,0 +1,1 @@
+            +new content
+            """.trimIndent()
+        )
     }
 }

@@ -5,10 +5,12 @@ import com.github.ajalt.clikt.core.subcommands
 import kgit.base.KGit
 import kgit.cli.commands.*
 import kgit.data.ObjectDatabase
+import kgit.diff.Diff
 
 
 private val objectDb = ObjectDatabase(workDir = ".")
 private val kgit = KGit(objectDb)
+private val diff = Diff(kgit, objectDb)
 
 fun main(args: Array<String>) {
     KGitCli()
@@ -26,7 +28,7 @@ fun main(args: Array<String>) {
             Branch(kgit),
             Status(kgit),
             Reset(kgit),
-            Show(kgit),
+            Show(diff, kgit),
         ).main(args)
 }
 

@@ -16,6 +16,7 @@ dependencies {
     implementation(kotlin("stdlib"))
     implementation("com.github.ajalt.clikt:clikt:3.0.1")
     implementation("guru.nidi:graphviz-kotlin:0.18.0")
+    implementation("io.github.java-diff-utils:java-diff-utils:4.9")
     testImplementation(platform("org.junit:junit-bom:5.7.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation("com.willowtreeapps.assertk:assertk-jvm:0.21")

@@ -5,8 +5,9 @@ import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.optional
 import kgit.base.KGit
 import kgit.cli.prettyPrint
+import kgit.diff.Diff
 
-class Show(private val kgit: KGit) : CliktCommand(help = "Print commit message") {
+class Show(private val diff: Diff, private val kgit: KGit) : CliktCommand(help = "Print commit message") {
 
     private val oid: String? by argument(help = "OID to show").optional()
 
@@ -17,8 +18,8 @@ class Show(private val kgit: KGit) : CliktCommand(help = "Print commit message")
 
             if (commit.parentOid != null) {
                 val parentTree = commit.parentOid.let(kgit::getCommit).treeOid
-                val changedPaths = kgit.diffTrees(kgit.getTree(parentTree), kgit.getTree(commit.treeOid))
-                changedPaths.forEach(::println)
+                val diffLines = diff.diffTrees(kgit.getTree(parentTree), kgit.getTree(commit.treeOid))
+                echo(diffLines.joinToString(separator = "\n"))
             }
         }
     }
