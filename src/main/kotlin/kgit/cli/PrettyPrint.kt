@@ -9,3 +9,5 @@ fun Commit.prettyPrint(oid: Oid, refs: Map<String, MutableList<String>> = emptyM
     println("\t$message")
     println("")
 }
+
+fun List<String>.printDiffLines() = this.joinToString(separator = "\n")

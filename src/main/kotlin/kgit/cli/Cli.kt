@@ -10,7 +10,7 @@ import kgit.diff.Diff
 
 private val objectDb = ObjectDatabase(workDir = ".")
 private val kgit = KGit(objectDb)
-private val diff = Diff(kgit, objectDb)
+private val diff = Diff(objectDb)
 
 fun main(args: Array<String>) {
     KGitCli()
@@ -28,7 +28,8 @@ fun main(args: Array<String>) {
             Branch(kgit),
             Status(kgit),
             Reset(kgit),
-            Show(diff, kgit),
+            Show(kgit, diff),
+            DiffCommand(kgit, diff)
         ).main(args)
 }
 

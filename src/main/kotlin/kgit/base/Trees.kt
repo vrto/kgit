@@ -15,7 +15,7 @@ class Tree(private val entries: List<Entry>) : Iterable<Tree.Entry> {
         override fun toString() = "$type $oid $name"
     }
 
-    class FileState(val path: String, val oid: Oid)
+    data class FileState(val path: String, val oid: Oid)
 
     fun parseState(basePath: String, treeLoader: (Oid) -> Tree): List<FileState> = entries.map { entry ->
         val path = basePath + entry.name

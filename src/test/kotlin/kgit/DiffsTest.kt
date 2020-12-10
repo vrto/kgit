@@ -8,13 +8,13 @@ import org.junit.jupiter.api.Test
 
 class DiffsTest : DynamicStructureAware() {
 
-    private val diff = Diff(kgit, objectDb)
+    private val diff = Diff(objectDb)
 
     @Test
     fun `no changes should result in an empty diff`() {
         val oid = kgit.writeTree()
-        val from = kgit.getTree(oid)
-        val to = kgit.getTree(oid)
+        val from = kgit.getComparableTree(oid)
+        val to = kgit.getComparableTree(oid)
 
         val changedPaths = diff.diffTrees(from, to)
         assertThat(changedPaths).isEmpty()
@@ -26,8 +26,8 @@ class DiffsTest : DynamicStructureAware() {
         modifyOneFile()
         val changed = kgit.writeTree()
 
-        val from = kgit.getTree(orig)
-        val to = kgit.getTree(changed)
+        val from = kgit.getComparableTree(orig)
+        val to = kgit.getComparableTree(changed)
 
         val diffLines = diff.diffTrees(from, to)
 
@@ -48,8 +48,8 @@ class DiffsTest : DynamicStructureAware() {
         modifyCurrentWorkingDirFiles()
         val changed = kgit.writeTree()
 
-        val from = kgit.getTree(orig)
-        val to = kgit.getTree(changed)
+        val from = kgit.getComparableTree(orig)
+        val to = kgit.getComparableTree(changed)
 
         val diffLines = diff.diffTrees(from, to)
 

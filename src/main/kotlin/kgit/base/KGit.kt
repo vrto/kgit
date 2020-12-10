@@ -1,6 +1,8 @@
 package kgit.base
 
+import kgit.base.Tree.FileState
 import kgit.data.*
+import kgit.diff.ComparableTree
 import java.io.File
 
 class KGit(private val objectDb: ObjectDatabase) {
@@ -52,6 +54,17 @@ class KGit(private val objectDb: ObjectDatabase) {
             Tree.Entry(type = parts[0], oid = Oid(parts[1]), name = parts[2])
         }.toTree()
     }
+
+    internal fun getComparableTree(oid: Oid): ComparableTree = getTree(oid).parseState("./", this::getTree)
+
+    fun getWorkingTree(): List<FileState> = File(objectDb.workDir)
+        .walk()
+        .filterNot { it.isDirectory }
+        .filterNot { it.isIgnored() }
+        .map {
+            FileState(it.path, objectDb.hashObject(it.readBytes(), TYPE_BLOB))
+        }
+        .toList()
 
     fun commit(message: String): Oid {
         val treeOid = writeTree()

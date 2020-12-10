@@ -2,17 +2,16 @@ package kgit.diff
 
 import com.github.difflib.DiffUtils
 import com.github.difflib.UnifiedDiffUtils
-import kgit.base.KGit
 import kgit.base.Tree
 import kgit.data.ObjectDatabase
 import kgit.data.Oid
 import kgit.data.TYPE_BLOB
 
-class Diff(private val kgit: KGit, private val data: ObjectDatabase) {
+class Diff(private val data: ObjectDatabase) {
 
-    fun diffTrees(orig: Tree, changed: Tree): List<String> {
-        val fromState = orig.parseState("./", kgit::getTree).map { it.path to it.oid }.toMap()
-        val toState = changed.parseState("./", kgit::getTree).map { it.path to it.oid }.toMap()
+    fun diffTrees(orig: ComparableTree, changed: ComparableTree): List<String> {
+        val fromState = orig.asMap()
+        val toState = changed.asMap()
         val allPaths = (fromState.map { it.key } + toState.map { it.key }).toSet()
         return allPaths
             .filter { fromState[it] != toState[it] }
@@ -31,3 +30,6 @@ class Diff(private val kgit: KGit, private val data: ObjectDatabase) {
         data.getObject(it, TYPE_BLOB).split("\n")
     } ?: emptyList()
 }
+
+typealias ComparableTree = List<Tree.FileState>
+fun ComparableTree.asMap() = this.map { it.path to it.oid }.toMap()
