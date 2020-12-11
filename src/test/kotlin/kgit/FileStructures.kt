@@ -46,6 +46,15 @@ fun modifyCurrentWorkingDirFiles() {
     }
 }
 
+fun modifyAndDeleteCurrentWorkingDirFiles() {
+    File("$DYNAMIC_STRUCTURE/flat.txt").delete()
+    File("$DYNAMIC_STRUCTURE/subdir/nested.txt").writeText("changed nested content")
+    File("$DYNAMIC_STRUCTURE/new_file").apply {
+        require(createNewFile())
+        writeText("new content")
+    }
+}
+
 fun assertFilesChanged() {
     assertThat(File("$DYNAMIC_STRUCTURE/flat.txt").readText()).isEqualTo("changed content")
     assertThat(File("$DYNAMIC_STRUCTURE/subdir/nested.txt").readText()).isEqualTo("changed nested content")

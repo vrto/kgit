@@ -26,7 +26,7 @@ fun main(args: Array<String>) {
             Tag(kgit),
             K(objectDb, kgit),
             Branch(kgit),
-            Status(kgit),
+            Status(kgit, diff),
             Reset(kgit),
             Show(kgit, diff),
             DiffCommand(kgit, diff)
