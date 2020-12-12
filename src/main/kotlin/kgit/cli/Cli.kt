@@ -29,7 +29,8 @@ fun main(args: Array<String>) {
             Status(kgit, diff),
             Reset(kgit),
             Show(kgit, diff),
-            DiffCommand(kgit, diff)
+            DiffCommand(kgit, diff),
+            Merge(kgit)
         ).main(args)
 }
 

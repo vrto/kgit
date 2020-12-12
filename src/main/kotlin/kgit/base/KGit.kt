@@ -156,4 +156,8 @@ class KGit(private val objectDb: ObjectDatabase) {
         objectDb.setHead(oid.toDirectRef())
     }
 
+    fun merge(other: Oid) {
+        TODO("Not yet implemented")
+    }
+
 }
