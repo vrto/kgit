@@ -1,12 +1,14 @@
 package kgit.diff
 
-import com.github.difflib.DiffUtils
-import com.github.difflib.UnifiedDiffUtils
 import kgit.base.Tree
 import kgit.data.ObjectDatabase
 import kgit.data.Oid
 import kgit.data.TYPE_BLOB
 import kgit.diff.ChangeAction.*
+import java.io.File
+import java.io.IOException
+import java.lang.ProcessBuilder.Redirect.PIPE
+import java.util.concurrent.TimeUnit
 
 class Diff(private val data: ObjectDatabase) {
 
@@ -17,16 +19,21 @@ class Diff(private val data: ObjectDatabase) {
         return allPaths
             .filter { fromState[it] != toState[it] }
             .map { diffBlobs(orig = fromState[it], changed = toState[it], path = it) }
-            .flatten()
     }
 
     private fun Map<String, Oid>.combinePaths(other: Map<String, Oid>) = (map { it.key } + other.map { it.key }).toSet()
 
-    private fun diffBlobs(orig: Oid?, changed: Oid?, path: String): List<String> {
-        val origLines = orig.readLines()
-        val changedLines = changed.readLines()
-        val patch = DiffUtils.diff(origLines, changedLines)
-        return UnifiedDiffUtils.generateUnifiedDiff(path, path, origLines, patch, 0)
+    private fun diffBlobs(orig: Oid?, changed: Oid?, path: String): String {
+        val origTemp = File.createTempFile("orig", "comparable").apply {
+            writeText(orig.readLines().joinToString(separator = "\n", postfix = "\n"))
+            deleteOnExit()
+        }
+        val changedTemp = File.createTempFile("changed", "comparable").apply {
+            writeText(changed.readLines().joinToString(separator = "\n", postfix = "\n"))
+            deleteOnExit()
+        }
+        return "diff --unified --show-c-function --label $path $origTemp --label $path $changedTemp"
+            .runCommand(File(data.workDir))
     }
 
     fun listFileChanges(orig: ComparableTree, changed: ComparableTree): List<FileChange> {
@@ -56,4 +63,19 @@ fun ComparableTree.asMap() = this.map { it.path to it.oid }.toMap()
 data class FileChange(val path: String, val action: ChangeAction)
 enum class ChangeAction {
     NEW, DELETED, MODIFIED, NO_CHANGE
+}
+
+fun String.runCommand(workingDir: File): String = try {
+    val parts = this.split("\\s".toRegex())
+    val proc = ProcessBuilder(*parts.toTypedArray())
+        .directory(workingDir)
+        .redirectOutput(PIPE)
+        .redirectError(PIPE)
+        .start()
+
+    proc.waitFor(1, TimeUnit.MINUTES)
+    proc.inputStream.bufferedReader().readText()
+} catch(e: IOException) {
+    e.printStackTrace()
+    ""
 }

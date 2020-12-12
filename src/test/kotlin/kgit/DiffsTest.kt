@@ -42,9 +42,10 @@ class DiffsTest : DynamicStructureAware() {
                 """
             --- ./flat.txt
             +++ ./flat.txt
-            @@ -1,1 +1,1 @@
+            @@ -1 +1 @@
             -orig content
             +changed content
+            
             """.trimIndent()
             )
         }
@@ -64,18 +65,22 @@ class DiffsTest : DynamicStructureAware() {
                 """
             --- ./flat.txt
             +++ ./flat.txt
-            @@ -1,1 +1,1 @@
+            @@ -1 +1 @@
             -orig content
             +changed content
+            
             --- ./subdir/nested.txt
             +++ ./subdir/nested.txt
-            @@ -1,1 +1,1 @@
+            @@ -1 +1 @@
             -orig nested content
             +changed nested content
+            
             --- ./new_file
             +++ ./new_file
-            @@ -1,0 +1,1 @@
+            @@ -1 +1 @@
+            -
             +new content
+
             """.trimIndent()
             )
         }
