@@ -9,8 +9,8 @@ import kgit.diff.Diff
 
 
 private val objectDb = ObjectDatabase(workDir = ".")
-private val kgit = KGit(objectDb)
 private val diff = Diff(objectDb)
+private val kgit = KGit(objectDb, diff)
 
 fun main(args: Array<String>) {
     KGitCli()

@@ -3,9 +3,10 @@ package kgit.base
 import kgit.base.Tree.FileState
 import kgit.data.*
 import kgit.diff.ComparableTree
+import kgit.diff.Diff
 import java.io.File
 
-class KGit(private val objectDb: ObjectDatabase) {
+class KGit(private val objectDb: ObjectDatabase, private val diff: Diff) {
 
     fun init() {
         objectDb.init()
@@ -46,7 +47,13 @@ class KGit(private val objectDb: ObjectDatabase) {
     }
 
     private fun readTreeMerged(headTree: Oid, otherTree: Oid) {
-        TODO("Not yet implemented")
+        File(objectDb.workDir).emptyDir()
+        diff.mergeTrees(getComparableTree(headTree), getComparableTree(otherTree)).forEach { (path, content) ->
+            File(path).apply {
+                createNewFileWithinHierarchy()
+                writeText(content)
+            }
+        }
     }
 
     internal fun getTree(oid: Oid): Tree {
@@ -59,7 +66,7 @@ class KGit(private val objectDb: ObjectDatabase) {
         }.toTree()
     }
 
-    internal fun getComparableTree(oid: Oid): ComparableTree = getTree(oid).parseState("./", this::getTree)
+    internal fun getComparableTree(oid: Oid): ComparableTree = getTree(oid).parseState("${objectDb.workDir}/", this::getTree)
 
     fun getWorkingTree(): List<FileState> = File(objectDb.workDir)
         .walk()

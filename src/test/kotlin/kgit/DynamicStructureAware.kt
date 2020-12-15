@@ -2,13 +2,14 @@ package kgit
 
 import kgit.base.KGit
 import kgit.data.ObjectDatabase
+import kgit.diff.Diff
 import org.junit.jupiter.api.BeforeEach
 import java.nio.file.Path
 
 abstract class DynamicStructureAware {
 
     protected val objectDb = ObjectDatabase(DYNAMIC_STRUCTURE)
-    protected val kgit = KGit(objectDb)
+    protected val kgit = KGit(objectDb, Diff(objectDb))
 
     @BeforeEach
     fun createKgitDir() {

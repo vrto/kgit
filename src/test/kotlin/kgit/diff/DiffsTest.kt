@@ -4,6 +4,7 @@ import assertk.assertThat
 import assertk.assertions.containsExactly
 import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
+import kgit.DYNAMIC_STRUCTURE
 import kgit.diff.ChangeAction.*
 import kgit.modifyAndDeleteCurrentWorkingDirFiles
 import kgit.modifyCurrentWorkingDirFiles
@@ -36,8 +37,8 @@ class DiffsTest : TreeAwareTest() {
 
             assertThat(diffLines.joinToString(separator = "\n")).isEqualTo(
                 """
-            --- ./flat.txt
-            +++ ./flat.txt
+            --- $DYNAMIC_STRUCTURE/flat.txt
+            +++ $DYNAMIC_STRUCTURE/flat.txt
             @@ -1 +1 @@
             -orig content
             +changed content
@@ -56,20 +57,20 @@ class DiffsTest : TreeAwareTest() {
 
             assertThat(diffLines.joinToString(separator = "\n")).isEqualTo(
                 """
-            --- ./flat.txt
-            +++ ./flat.txt
+            --- $DYNAMIC_STRUCTURE/flat.txt
+            +++ $DYNAMIC_STRUCTURE/flat.txt
             @@ -1 +1 @@
             -orig content
             +changed content
             
-            --- ./subdir/nested.txt
-            +++ ./subdir/nested.txt
+            --- $DYNAMIC_STRUCTURE/subdir/nested.txt
+            +++ $DYNAMIC_STRUCTURE/subdir/nested.txt
             @@ -1 +1 @@
             -orig nested content
             +changed nested content
             
-            --- ./new_file
-            +++ ./new_file
+            --- $DYNAMIC_STRUCTURE/new_file
+            +++ $DYNAMIC_STRUCTURE/new_file
             @@ -1 +1 @@
             -
             +new content
@@ -97,7 +98,7 @@ class DiffsTest : TreeAwareTest() {
             }
 
             val fileChanges = diff.listFileChanges(from, to)
-            assertThat(fileChanges).containsExactly(FileChange("./flat.txt", MODIFIED))
+            assertThat(fileChanges).containsExactly(FileChange("$DYNAMIC_STRUCTURE/flat.txt", MODIFIED))
         }
 
         @Test
@@ -108,9 +109,9 @@ class DiffsTest : TreeAwareTest() {
 
             val fileChanges = diff.listFileChanges(from, to)
             assertThat(fileChanges).containsExactly(
-                FileChange("./flat.txt", DELETED),
-                FileChange("./subdir/nested.txt", MODIFIED),
-                FileChange("./new_file", NEW)
+                FileChange("$DYNAMIC_STRUCTURE/flat.txt", DELETED),
+                FileChange("$DYNAMIC_STRUCTURE/subdir/nested.txt", MODIFIED),
+                FileChange("$DYNAMIC_STRUCTURE/new_file", NEW)
             )
         }
     }

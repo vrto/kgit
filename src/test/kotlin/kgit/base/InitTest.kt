@@ -6,6 +6,7 @@ import assertk.assertions.isNull
 import kgit.DYNAMIC_STRUCTURE
 import kgit.createDynamicTestStructure
 import kgit.data.ObjectDatabase
+import kgit.diff.Diff
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
@@ -13,7 +14,7 @@ import java.nio.file.Path
 class InitTest {
 
     private val objectDb = ObjectDatabase(DYNAMIC_STRUCTURE)
-    private val kgit = KGit(objectDb)
+    private val kgit = KGit(objectDb, Diff(objectDb))
 
     @BeforeEach
     fun setUpTestStructure() {

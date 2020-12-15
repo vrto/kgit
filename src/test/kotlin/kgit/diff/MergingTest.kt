@@ -2,6 +2,7 @@ package kgit.diff
 
 import assertk.assertThat
 import assertk.assertions.containsExactly
+import kgit.DYNAMIC_STRUCTURE
 import kgit.modifyCurrentWorkingDirFiles
 import kgit.modifyOneFile
 import org.junit.jupiter.api.Test
@@ -17,8 +18,8 @@ class MergingTest : TreeAwareTest() {
 
         val merged = diff.mergeTrees(from, to)
         assertThat(merged).containsExactly(
-            FileMerge(path = "./flat.txt", content = "orig content\n"),
-            FileMerge(path = "./subdir/nested.txt", content = "orig nested content\n")
+            FileMerge(path = "$DYNAMIC_STRUCTURE/flat.txt", content = "orig content\n"),
+            FileMerge(path = "$DYNAMIC_STRUCTURE/subdir/nested.txt", content = "orig nested content\n")
         )
     }
 
@@ -31,7 +32,7 @@ class MergingTest : TreeAwareTest() {
         val merged = diff.mergeTrees(from, to)
         assertThat(merged).containsExactly(
             FileMerge(
-                path = "./flat.txt", content = """
+                path = "$DYNAMIC_STRUCTURE/flat.txt", content = """
                 #ifndef HEAD
                 orig content
                 #else /* HEAD */
@@ -40,7 +41,7 @@ class MergingTest : TreeAwareTest() {
                 
                 """.trimIndent()
             ),
-            FileMerge(path = "./subdir/nested.txt", content = "orig nested content\n")
+            FileMerge(path = "$DYNAMIC_STRUCTURE/subdir/nested.txt", content = "orig nested content\n")
         )
     }
 
@@ -52,7 +53,7 @@ class MergingTest : TreeAwareTest() {
 
         val merged = diff.mergeTrees(from, to)
         assertThat(merged).containsExactly(
-            FileMerge(path = "./flat.txt", content = """
+            FileMerge(path = "$DYNAMIC_STRUCTURE/flat.txt", content = """
                 #ifndef HEAD
                 orig content
                 #else /* HEAD */
@@ -61,7 +62,7 @@ class MergingTest : TreeAwareTest() {
                 
                 """.trimIndent()
             ),
-            FileMerge(path = "./subdir/nested.txt", content = """
+            FileMerge(path = "$DYNAMIC_STRUCTURE/subdir/nested.txt", content = """
                 #ifndef HEAD
                 orig nested content
                 #else /* HEAD */
@@ -70,7 +71,7 @@ class MergingTest : TreeAwareTest() {
                 
                 """.trimIndent()
             ),
-            FileMerge(path = "./new_file", content = """
+            FileMerge(path = "$DYNAMIC_STRUCTURE/new_file", content = """
                 #ifndef HEAD
                 
                 #else /* HEAD */
