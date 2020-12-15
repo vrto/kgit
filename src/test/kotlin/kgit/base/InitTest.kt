@@ -1,9 +1,10 @@
-package kgit
+package kgit.base
 
 import assertk.assertThat
 import assertk.assertions.isEqualTo
 import assertk.assertions.isNull
-import kgit.base.KGit
+import kgit.DYNAMIC_STRUCTURE
+import kgit.createDynamicTestStructure
 import kgit.data.ObjectDatabase
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test

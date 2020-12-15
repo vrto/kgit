@@ -1,8 +1,8 @@
-package kgit
+package kgit.data
 
 import assertk.assertThat
 import assertk.assertions.*
-import kgit.data.*
+import kgit.STATIC_STRUCTURE
 import org.junit.jupiter.api.*
 import java.io.File
 import java.nio.file.Files

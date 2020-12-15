@@ -1,8 +1,9 @@
-package kgit
+package kgit.base
 
 import assertk.assertAll
 import assertk.assertThat
 import assertk.assertions.*
+import kgit.*
 import kgit.data.TYPE_TREE
 import org.junit.jupiter.api.Test
 

@@ -1,7 +1,8 @@
-package kgit
+package kgit.base
 
 import assertk.assertThat
 import assertk.assertions.containsExactly
+import kgit.DynamicStructureAware
 import org.junit.jupiter.api.Test
 
 class OidListingTest : DynamicStructureAware() {

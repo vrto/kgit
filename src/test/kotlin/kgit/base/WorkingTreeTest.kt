@@ -1,11 +1,14 @@
-package kgit
+package kgit.base
 
 import assertk.assertThat
 import assertk.assertions.containsOnly
 import assertk.assertions.doesNotContain
 import assertk.assertions.extracting
 import assertk.assertions.hasSize
+import kgit.DYNAMIC_STRUCTURE
+import kgit.DynamicStructureAware
 import kgit.base.Tree.FileState
+import kgit.modifyCurrentWorkingDirFiles
 import org.junit.jupiter.api.Test
 
 class WorkingTreeTest : DynamicStructureAware() {

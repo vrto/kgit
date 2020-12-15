@@ -1,8 +1,10 @@
-package kgit
+package kgit.base
 
 import assertk.assertAll
 import assertk.assertThat
 import assertk.assertions.*
+import kgit.DYNAMIC_STRUCTURE
+import kgit.DynamicStructureAware
 import kgit.data.TYPE_COMMIT
 import kgit.data.toOid
 import org.junit.jupiter.api.Test

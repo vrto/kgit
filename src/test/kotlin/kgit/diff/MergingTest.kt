@@ -1,9 +1,9 @@
-package kgit
+package kgit.diff
 
 import assertk.assertThat
 import assertk.assertions.containsExactly
-import kgit.diff.Diff
-import kgit.diff.FileMerge
+import kgit.modifyCurrentWorkingDirFiles
+import kgit.modifyOneFile
 import org.junit.jupiter.api.Test
 
 

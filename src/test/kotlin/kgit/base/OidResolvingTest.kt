@@ -1,7 +1,8 @@
-package kgit
+package kgit.base
 
 import assertk.assertThat
 import assertk.assertions.isEqualTo
+import kgit.DynamicStructureAware
 import kgit.data.Oid
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test

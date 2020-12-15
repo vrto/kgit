@@ -45,6 +45,10 @@ class KGit(private val objectDb: ObjectDatabase) {
         }
     }
 
+    private fun readTreeMerged(headTree: Oid, otherTree: Oid) {
+        TODO("Not yet implemented")
+    }
+
     internal fun getTree(oid: Oid): Tree {
         val rawTree = objectDb.getObject(oid, expectedType = TYPE_TREE)
         val lines = rawTree.split("\n")
@@ -157,7 +161,9 @@ class KGit(private val objectDb: ObjectDatabase) {
     }
 
     fun merge(other: Oid) {
-        TODO("Not yet implemented")
+        val headCommit = getCommit(objectDb.getHead().oid)
+        val otherCommit = getCommit(other)
+        readTreeMerged(headCommit.treeOid, otherCommit.treeOid)
     }
 
 }

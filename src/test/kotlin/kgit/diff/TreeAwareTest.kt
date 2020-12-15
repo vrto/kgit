@@ -1,6 +1,6 @@
-package kgit
+package kgit.diff
 
-import kgit.diff.ComparableTree
+import kgit.DynamicStructureAware
 
 abstract class TreeAwareTest : DynamicStructureAware() {
 
