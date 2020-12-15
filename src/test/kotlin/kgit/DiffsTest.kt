@@ -10,7 +10,7 @@ import kgit.diff.FileChange
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
-class DiffsTest : DynamicStructureAware() {
+class DiffsTest : TreeAwareTest() {
 
     private val diff = Diff(objectDb)
 
@@ -19,9 +19,7 @@ class DiffsTest : DynamicStructureAware() {
 
         @Test
         fun `no changes should result in an empty diff`() {
-            val oid = kgit.writeTree()
-            val from = kgit.getComparableTree(oid)
-            val to = kgit.getComparableTree(oid)
+            val (from, to) = createTrees()
 
             val changedPaths = diff.diffTrees(from, to)
             assertThat(changedPaths).isEmpty()
@@ -29,12 +27,9 @@ class DiffsTest : DynamicStructureAware() {
 
         @Test
         fun `should show diff for one changed file`() {
-            val orig = kgit.writeTree()
-            modifyOneFile()
-            val changed = kgit.writeTree()
-
-            val from = kgit.getComparableTree(orig)
-            val to = kgit.getComparableTree(changed)
+            val (from, to) = createTrees {
+                modifyOneFile()
+            }
 
             val diffLines = diff.diffTrees(from, to)
 
@@ -52,12 +47,9 @@ class DiffsTest : DynamicStructureAware() {
 
         @Test
         fun `should diff a bunch of changed files`() {
-            val orig = kgit.writeTree()
-            modifyCurrentWorkingDirFiles()
-            val changed = kgit.writeTree()
-
-            val from = kgit.getComparableTree(orig)
-            val to = kgit.getComparableTree(changed)
+            val (from, to) = createTrees {
+                modifyCurrentWorkingDirFiles()
+            }
 
             val diffLines = diff.diffTrees(from, to)
 
@@ -91,9 +83,7 @@ class DiffsTest : DynamicStructureAware() {
 
         @Test
         fun `no changes should be listed if nothing has changed`() {
-            val oid = kgit.writeTree()
-            val from = kgit.getComparableTree(oid)
-            val to = kgit.getComparableTree(oid)
+            val (from, to) = createTrees()
 
             val fileChanges = diff.listFileChanges(from, to)
             assertThat(fileChanges).isEmpty()
@@ -101,12 +91,9 @@ class DiffsTest : DynamicStructureAware() {
 
         @Test
         fun `should list a single changed file`() {
-            val orig = kgit.writeTree()
-            modifyOneFile()
-            val changed = kgit.writeTree()
-
-            val from = kgit.getComparableTree(orig)
-            val to = kgit.getComparableTree(changed)
+            val (from, to) = createTrees {
+                modifyOneFile()
+            }
 
             val fileChanges = diff.listFileChanges(from, to)
             assertThat(fileChanges).containsExactly(FileChange("./flat.txt", MODIFIED))
@@ -114,12 +101,9 @@ class DiffsTest : DynamicStructureAware() {
 
         @Test
         fun `should identify all change types`() {
-            val orig = kgit.writeTree()
-            modifyAndDeleteCurrentWorkingDirFiles()
-            val changed = kgit.writeTree()
-
-            val from = kgit.getComparableTree(orig)
-            val to = kgit.getComparableTree(changed)
+            val (from, to) = createTrees {
+                modifyAndDeleteCurrentWorkingDirFiles()
+            }
 
             val fileChanges = diff.listFileChanges(from, to)
             assertThat(fileChanges).containsExactly(
