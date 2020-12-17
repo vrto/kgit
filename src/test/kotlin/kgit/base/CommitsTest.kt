@@ -58,7 +58,7 @@ class CommitsTest : DynamicStructureAware() {
         val commit = kgit.getCommit(oid)
         with (commit) {
             assertThat(treeOid).isNotNull()
-            assertThat(parentOid).isNull()
+            assertThat(parentOids).isEmpty()
             assertThat(message).isEqualTo("Test commit")
         }
     }
@@ -71,7 +71,7 @@ class CommitsTest : DynamicStructureAware() {
 
         with (commit) {
             assertThat(treeOid).isNotNull()
-            assertThat(parentOid).isEqualTo(parentOid)
+            assertThat(parentOids).containsExactly(parentOid)
             assertThat(message).isEqualTo("Head msg")
         }
     }

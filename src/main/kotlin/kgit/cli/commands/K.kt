@@ -30,7 +30,7 @@ class K(private val objectDb: ObjectDatabase, private val kgit: KGit)
         allCommits.forEach { oid ->
             val commit = kgit.getCommit(oid)
             graph.add(oid.toNode())
-            commit.parentOid?.let {
+            commit.parentOids.forEach {
                 graph.add(oid.linkToParent(it))
             }
         }

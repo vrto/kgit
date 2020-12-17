@@ -5,6 +5,7 @@ import kgit.data.*
 import kgit.diff.ComparableTree
 import kgit.diff.Diff
 import java.io.File
+import java.util.*
 
 class KGit(private val objectDb: ObjectDatabase, private val diff: Diff) {
 
@@ -79,8 +80,8 @@ class KGit(private val objectDb: ObjectDatabase, private val diff: Diff) {
 
     fun commit(message: String): Oid {
         val treeOid = writeTree()
-        val parent = objectDb.getHead().oidOrNull
-        val commit = Commit(treeOid, parent, message)
+        val parents = objectDb.getHead().oidOrNull?.let { listOf(it) }.orEmpty()
+        val commit = Commit(treeOid, parents, message)
         return objectDb.hashObject(commit.toString().encodeToByteArray(), TYPE_COMMIT).also {
             objectDb.setHead(it.toDirectRef())
         }
@@ -92,10 +93,12 @@ class KGit(private val objectDb: ObjectDatabase, private val diff: Diff) {
             .filter { it.isNotEmpty() } // empty lines are just readability
 
         val treeOid = lines.first { it.startsWith("tree") }.drop("tree ".length).toOid()
-        val parentOid = lines.find { it.startsWith("parent") }?.drop("parent ".length)?.toOid()
+        val parentOids = lines
+            .filter { it.startsWith("parent") }
+            .map { it.drop("parent ".length).toOid() }
         val msg = lines.last()
 
-        return Commit(treeOid, parentOid, msg)
+        return Commit(treeOid, parentOids, msg)
     }
 
     fun checkout(name: String) {
@@ -128,7 +131,7 @@ class KGit(private val objectDb: ObjectDatabase, private val diff: Diff) {
     }
 
     fun listCommitsAndParents(refOids: List<Oid>): List<Oid> {
-        val oids: MutableList<Oid?> = refOids.toMutableList()
+        val oids: LinkedList<Oid> = LinkedList(refOids)
         val visited = linkedSetOf<Oid>() // preserving order of inserts
 
         while (oids.isNotEmpty()) {
@@ -138,7 +141,18 @@ class KGit(private val objectDb: ObjectDatabase, private val diff: Diff) {
             visited.add(oid)
 
             val commit = getCommit(oid)
-            oids.add(0, commit.parentOid)
+
+            // first parent next
+            commit.parentOids
+                .takeIf { it.isNotEmpty() }
+                ?.first()
+                .let { oids.push(it) }
+
+            // other parents later
+            commit.parentOids
+                .takeIf { it.size > 1 }
+                ?.drop(1)
+                ?.let { oids.addAll(it) }
         }
 
         return visited.toList()
