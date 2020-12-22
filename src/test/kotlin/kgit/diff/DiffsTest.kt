@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test
 
 class DiffsTest : TreeAwareTest() {
 
-    private val diff = Diff(objectDb)
+    private val diff = Diff(data)
 
     @Nested
     inner class Diffing {

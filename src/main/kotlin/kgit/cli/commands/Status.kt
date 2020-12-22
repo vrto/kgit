@@ -14,7 +14,7 @@ class Status(private val kgit: KGit, private val diff: Diff, private val data: O
             else -> echo("On branch $branch")
         }
 
-        data.getRef("MERGE_HEAD").oidOrNull?.let {
+        data.getMergeHead()?.let {
             echo("Merging with $it")
         }
 

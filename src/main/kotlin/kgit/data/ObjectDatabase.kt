@@ -79,6 +79,8 @@ class ObjectDatabase(val workDir: String) {
 
     fun getHead(deref: Boolean = true): RefValue = getRef("HEAD", deref)
 
+    fun getMergeHead(deref: Boolean = true): RefValue? = getRef("MERGE_HEAD", deref).takeIf { it.oidOrNull != null }
+
     fun getRef(refName: String, deref: Boolean = true): RefValue =
         getRefInternal(refName, deref).ref
 
@@ -102,7 +104,12 @@ class ObjectDatabase(val workDir: String) {
         val refs = names.map {
             NamedRefValue(it, getRef("refs/$it", deref))
         }
-        return listOf(NamedRefValue("HEAD", getHead())) + refs
+
+        // prepend HEAD & MERGE_HEAD to list of all refs
+        return mutableListOf<NamedRefValue>().apply {
+            add(NamedRefValue("HEAD", getHead()))
+            getMergeHead(deref)?.let { add(NamedRefValue("MERGE_HEAD", it)) }
+        } + refs
     }
 
     fun deleteRef(refName: String, deref: Boolean = true) {

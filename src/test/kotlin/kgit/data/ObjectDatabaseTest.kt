@@ -140,6 +140,21 @@ class ObjectDatabaseTest {
         }
 
         @Test
+        fun `should include MERGE_HEAD in iterate refs result`() {
+            val oid1 = objectDb.hashObject("sample data".toByteArray(), TYPE_BLOB)
+            File("$KGIT_DIR/refs/tags/tag1").writeText(oid1.value)
+            objectDb.setHead(oid1.toDirectRef())
+            objectDb.updateRef("MERGE_HEAD", oid1.toDirectRef())
+
+            val refs = objectDb.iterateRefs()
+
+            assertThat(refs).containsExactly(
+                NamedRefValue("HEAD", oid1.toDirectRef()),
+                NamedRefValue("MERGE_HEAD", oid1.toDirectRef()),
+                NamedRefValue("tags/tag1", oid1.toDirectRef()))
+        }
+
+        @Test
         fun `should dereference refs`() {
             val oid = objectDb.hashObject("sample data".toByteArray(), TYPE_BLOB)
             File("$KGIT_DIR/refs/tags/tag1").writeText(oid.value)

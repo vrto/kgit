@@ -15,11 +15,11 @@ class CheckoutsTest : DynamicStructureAware() {
 
         modifyCurrentWorkingDirFiles()
         val next = kgit.commit("Second commit")
-        assertThat(objectDb.getHead().oid).isEqualTo(next)
+        assertThat(data.getHead().oid).isEqualTo(next)
 
         kgit.checkout(orig.value)
         assertFilesRestored()
-        assertThat(objectDb.getHead().oid).isEqualTo(orig)
+        assertThat(data.getHead().oid).isEqualTo(orig)
     }
 
     @Test
@@ -32,6 +32,6 @@ class CheckoutsTest : DynamicStructureAware() {
         kgit.checkout("test-branch")
 
         assertFilesRestored()
-        assertThat(objectDb.getHead(deref = false).value).isEqualTo("ref: refs/heads/test-branch")
+        assertThat(data.getHead(deref = false).value).isEqualTo("ref: refs/heads/test-branch")
     }
 }

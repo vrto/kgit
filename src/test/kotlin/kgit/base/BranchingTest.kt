@@ -19,9 +19,9 @@ class BranchingTest : DynamicStructureAware() {
 
     @Test
     fun `should create a new branch`() {
-        assertThat(objectDb.getRef("refs/heads/test-branch").oidOrNull).isNull()
+        assertThat(data.getRef("refs/heads/test-branch").oidOrNull).isNull()
         kgit.createBranch("test-branch", oid)
-        assertThat(objectDb.getRef("refs/heads/test-branch").oid).isEqualTo(oid)
+        assertThat(data.getRef("refs/heads/test-branch").oid).isEqualTo(oid)
     }
 
     @Test

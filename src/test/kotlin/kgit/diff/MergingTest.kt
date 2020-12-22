@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test
 
 class MergingTest : TreeAwareTest() {
 
-    private val diff = Diff(objectDb)
+    private val diff = Diff(data)
 
     @Test
     fun `merging two identical contents shouldn't change the content of files`() {

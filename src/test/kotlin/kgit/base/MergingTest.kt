@@ -39,9 +39,9 @@ class MergingTest : DynamicStructureAware() {
     fun `merge commit should wipe MERGE_HEAD`() {
         mergeCommitWithHead()
 
-        assertThat(objectDb.getRef("MERGE_HEAD").oidOrNull).isNotNull()
+        assertThat(data.getMergeHead()).isNotNull()
         kgit.commit("Commit merge changes")
-        assertThat(objectDb.getRef("MERGE_HEAD").oidOrNull).isNull()
+        assertThat(data.getMergeHead()).isNull()
     }
 
     private fun mergeCommitWithHead() {
@@ -51,6 +51,6 @@ class MergingTest : DynamicStructureAware() {
 
         kgit.merge(orig)
 
-        assertThat(objectDb.getRef("MERGE_HEAD").value).isEqualTo(orig.value)
+        assertThat(data.getMergeHead()!!.value).isEqualTo(orig.value)
     }
 }

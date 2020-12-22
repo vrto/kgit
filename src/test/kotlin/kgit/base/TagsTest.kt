@@ -13,7 +13,7 @@ class TagsTest : DynamicStructureAware() {
 
         kgit.tag("test-tag", oid)
 
-        val ref = objectDb.getRef("refs/tags/test-tag")
+        val ref = data.getRef("refs/tags/test-tag")
         assertThat(ref.oid).isEqualTo(oid)
     }
 
@@ -23,7 +23,7 @@ class TagsTest : DynamicStructureAware() {
 
         kgit.tag("nested/tag", oid)
 
-        val ref = objectDb.getRef("refs/tags/nested/tag")
+        val ref = data.getRef("refs/tags/nested/tag")
         assertThat(ref.oid).isEqualTo(oid)
     }
 }

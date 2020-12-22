@@ -82,8 +82,8 @@ class KGit(private val data: ObjectDatabase, private val diff: Diff) {
         val treeOid = writeTree()
         val parents = mutableListOf<Oid>().apply {
             data.getHead().oidOrNull?.let { add(it) }
-            data.getRef("MERGE_HEAD").oidOrNull?.let {
-                add(it)
+            data.getMergeHead()?.let {
+                add(it.oid)
                 data.deleteRef("MERGE_HEAD", deref = false)
             }
         }

@@ -8,14 +8,14 @@ import java.nio.file.Path
 
 abstract class DynamicStructureAware {
 
-    protected val objectDb = ObjectDatabase(DYNAMIC_STRUCTURE)
-    protected val kgit = KGit(objectDb, Diff(objectDb))
+    protected val data = ObjectDatabase(DYNAMIC_STRUCTURE)
+    protected val kgit = KGit(data, Diff(data))
 
     @BeforeEach
     fun createKgitDir() {
         Path.of(DYNAMIC_STRUCTURE).toFile().deleteRecursively()
         createDynamicTestStructure()
-        objectDb.init()
+        data.init()
     }
 
 }

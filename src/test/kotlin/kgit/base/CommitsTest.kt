@@ -18,7 +18,7 @@ class CommitsTest : DynamicStructureAware() {
     fun `should create a first commit`() {
         val oid = kgit.commit("Test commit")
 
-        val content = objectDb.getObject(oid, expectedType = TYPE_COMMIT)
+        val content = data.getObject(oid, expectedType = TYPE_COMMIT)
         val lines = content.split("\n")
         assertThat(lines).hasSize(3)
 
@@ -37,7 +37,7 @@ class CommitsTest : DynamicStructureAware() {
 
         val head = kgit.commit("Test commit 2")
 
-        val content = objectDb.getObject(head, expectedType = TYPE_COMMIT)
+        val content = data.getObject(head, expectedType = TYPE_COMMIT)
         val lines = content.split("\n")
         assertThat(lines).hasSize(4)
 

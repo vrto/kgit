@@ -13,7 +13,7 @@ class TreesTest : DynamicStructureAware() {
     fun `should write tree`() {
         val treeOid = kgit.writeTree()
 
-        val content = objectDb.getObject(treeOid, TYPE_TREE)
+        val content = data.getObject(treeOid, TYPE_TREE)
         val lines = content.split("\n")
         assertThat(lines).hasSize(2)
 

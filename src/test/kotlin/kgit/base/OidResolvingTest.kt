@@ -46,6 +46,6 @@ class OidResolvingTest : DynamicStructureAware() {
 
     @Test
     fun `should translate '@' to HEAD`() {
-        assertThat(kgit.getOid("@")).isEqualTo(objectDb.getHead().oid)
+        assertThat(kgit.getOid("@")).isEqualTo(data.getHead().oid)
     }
 }

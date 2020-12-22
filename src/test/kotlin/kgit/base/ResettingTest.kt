@@ -11,11 +11,11 @@ class ResettingTest : DynamicStructureAware() {
     fun `reset should move HEAD to an OID`() {
         val oid1 = kgit.commit("First commit")
         val oid2 = kgit.commit("Second commit")
-        assertThat(objectDb.getHead().oidValue).isEqualTo(oid2.value)
+        assertThat(data.getHead().oidValue).isEqualTo(oid2.value)
 
         kgit.reset(oid1)
 
-        assertThat(objectDb.getHead().oidValue).isEqualTo(oid1.value)
+        assertThat(data.getHead().oidValue).isEqualTo(oid1.value)
     }
 
 }
