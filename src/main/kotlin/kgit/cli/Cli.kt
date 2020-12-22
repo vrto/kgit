@@ -30,7 +30,8 @@ fun main(args: Array<String>) {
             Reset(kgit),
             Show(kgit, diff),
             DiffCommand(kgit, diff),
-            Merge(kgit)
+            Merge(kgit),
+            MergeBase(kgit),
         ).main(args)
 }
 

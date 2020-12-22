@@ -194,4 +194,10 @@ class KGit(private val data: ObjectDatabase, private val diff: Diff) {
         readTreeMerged(headCommit.treeOid, otherCommit.treeOid)
     }
 
+    fun mergeBase(oid1: Oid, oid2: Oid): Oid {
+        val parents1 = listCommitsAndParents(listOf(oid1))
+        val parents2 = listCommitsAndParents(listOf(oid2))
+        return parents2.first { it in parents1 }
+    }
+
 }
