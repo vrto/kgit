@@ -2,6 +2,8 @@ package kgit.base
 
 import assertk.assertThat
 import assertk.assertions.isEqualTo
+import assertk.assertions.isNotNull
+import assertk.assertions.isNull
 import kgit.DYNAMIC_STRUCTURE
 import kgit.DynamicStructureAware
 import kgit.modifyCurrentWorkingDirFiles
@@ -11,12 +13,8 @@ import java.io.File
 class MergingTest : DynamicStructureAware() {
 
     @Test
-    fun `should merge HEAD into given commit`() {
-        val orig = kgit.commit("first commit")
-        modifyCurrentWorkingDirFiles()
-        kgit.commit("set new HEAD")
-
-        kgit.merge(orig)
+    fun `should merge HEAD into given commit and set MERGE_HEAD`() {
+        mergeCommitWithHead()
 
         assertThat(File("$DYNAMIC_STRUCTURE/flat.txt").readText()).isEqualTo("""
             #ifndef HEAD
@@ -35,5 +33,24 @@ class MergingTest : DynamicStructureAware() {
             #endif /* HEAD */
 
         """.trimIndent())
+    }
+
+    @Test
+    fun `merge commit should wipe MERGE_HEAD`() {
+        mergeCommitWithHead()
+
+        assertThat(objectDb.getRef("MERGE_HEAD").oidOrNull).isNotNull()
+        kgit.commit("Commit merge changes")
+        assertThat(objectDb.getRef("MERGE_HEAD").oidOrNull).isNull()
+    }
+
+    private fun mergeCommitWithHead() {
+        val orig = kgit.commit("first commit")
+        modifyCurrentWorkingDirFiles()
+        kgit.commit("set new HEAD")
+
+        kgit.merge(orig)
+
+        assertThat(objectDb.getRef("MERGE_HEAD").value).isEqualTo(orig.value)
     }
 }

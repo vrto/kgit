@@ -10,5 +10,6 @@ class Merge(private val kgit: KGit) : CliktCommand(help = "Merge one branch into
 
     override fun run() {
         kgit.merge(kgit.getOid(commit))
+        echo("Merged in working tree\nPlease commit")
     }
 }

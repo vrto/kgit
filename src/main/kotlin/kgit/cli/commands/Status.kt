@@ -2,14 +2,20 @@ package kgit.cli.commands
 
 import com.github.ajalt.clikt.core.CliktCommand
 import kgit.base.KGit
+import kgit.data.ObjectDatabase
 import kgit.diff.Diff
 
-class Status(private val kgit: KGit, private val diff: Diff) : CliktCommand(help = "Print current work dir status") {
+class Status(private val kgit: KGit, private val diff: Diff, private val data: ObjectDatabase)
+    : CliktCommand(help = "Print current work dir status") {
 
     override fun run() {
         when (val branch = kgit.getBranchName()) {
             null -> echo("HEAD detached at ${kgit.getOid("@")}")
             else -> echo("On branch $branch")
+        }
+
+        data.getRef("MERGE_HEAD").oidOrNull?.let {
+            echo("Merging with $it")
         }
 
         val headTree = kgit.getComparableTree(kgit.getCommit(kgit.getOid("@")).treeOid)

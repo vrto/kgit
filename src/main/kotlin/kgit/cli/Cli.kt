@@ -8,25 +8,25 @@ import kgit.data.ObjectDatabase
 import kgit.diff.Diff
 
 
-private val objectDb = ObjectDatabase(workDir = ".")
-private val diff = Diff(objectDb)
-private val kgit = KGit(objectDb, diff)
+private val data = ObjectDatabase(workDir = ".")
+private val diff = Diff(data)
+private val kgit = KGit(data, diff)
 
 fun main(args: Array<String>) {
     KGitCli()
         .subcommands(
             Init(kgit),
-            HashObject(objectDb),
-            CatFile(objectDb, kgit),
+            HashObject(data),
+            CatFile(data, kgit),
             WriteTree(kgit),
             ReadTree(kgit),
             CommitCmd(kgit),
-            Log(objectDb, kgit),
+            Log(data, kgit),
             Checkout(kgit),
             Tag(kgit),
-            K(objectDb, kgit),
+            K(data, kgit),
             Branch(kgit),
-            Status(kgit, diff),
+            Status(kgit, diff, data),
             Reset(kgit),
             Show(kgit, diff),
             DiffCommand(kgit, diff),
