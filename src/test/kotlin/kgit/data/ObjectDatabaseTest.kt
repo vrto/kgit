@@ -183,6 +183,30 @@ class ObjectDatabaseTest {
             objectDb.updateRef("refs/heads/branch1", RefValue(symbolic = true, value = "refs/tags/tag1"))
             assertThat(File("$KGIT_DIR/refs/heads/branch1").readText()).isEqualTo("ref: refs/tags/tag1")
         }
+
+        @Test
+        fun `should delete direct ref`() {
+            val oid = objectDb.hashObject("sample data".toByteArray(), TYPE_BLOB)
+            objectDb.updateRef("refs/tags/tag1", RefValue(value = oid.value))
+            assertThat(File("$KGIT_DIR/refs/tags/tag1").readText()).isEqualTo(oid.value)
+
+            objectDb.deleteRef("refs/tags/tag1")
+
+            assertThat(File("$KGIT_DIR/refs/tags/tag1").exists()).isFalse()
+        }
+
+        @Test
+        fun `should delete symbolic ref`() {
+            val oid = objectDb.hashObject("sample data".toByteArray(), TYPE_BLOB)
+            objectDb.updateRef("refs/tags/tag1", RefValue(value = oid.value))
+            objectDb.updateRef("refs/heads/branch1", RefValue(symbolic = true, value = "refs/tags/tag1"))
+            assertThat(File("$KGIT_DIR/refs/heads/branch1").readText()).isEqualTo("ref: refs/tags/tag1")
+
+            objectDb.deleteRef("refs/heads/branch1")
+
+            assertThat(File("$KGIT_DIR/refs/heads/branch1").exists()).isTrue()
+            assertThat(File("$KGIT_DIR/refs/tags/tag1").exists()).isFalse()
+        }
     }
 }
 

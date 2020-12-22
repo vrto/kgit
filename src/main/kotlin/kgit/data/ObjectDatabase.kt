@@ -104,6 +104,11 @@ class ObjectDatabase(val workDir: String) {
         }
         return listOf(NamedRefValue("HEAD", getHead())) + refs
     }
+
+    fun deleteRef(refName: String, deref: Boolean = true) {
+        val ref = getRefInternal(refName, deref).name
+        File("$workDir/$KGIT_DIR/$ref").delete()
+    }
 }
 
 class InvalidTypeException(expected: String, actual: String)
