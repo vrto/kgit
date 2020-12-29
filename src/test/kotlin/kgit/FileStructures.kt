@@ -37,6 +37,10 @@ fun modifyOneFile() {
     File("$DYNAMIC_STRUCTURE/flat.txt").writeText("changed content")
 }
 
+fun modifyOneSourceFile(text: String) {
+    File("$DYNAMIC_STRUCTURE/source.py").writeText(text)
+}
+
 fun modifyCurrentWorkingDirFiles() {
     File("$DYNAMIC_STRUCTURE/flat.txt").writeText("changed content")
     File("$DYNAMIC_STRUCTURE/subdir/nested.txt").writeText("changed nested content")

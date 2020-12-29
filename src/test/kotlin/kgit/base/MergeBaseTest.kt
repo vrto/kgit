@@ -10,7 +10,7 @@ class MergeBaseTest : DynamicStructureAware() {
     @Test
     fun `the only commit is its own closest ancestor`() {
         val first = kgit.commit("First commit")
-        val base = kgit.mergeBase(first, first)
+        val base = kgit.getMergeBase(first, first)
         assertThat(base).isEqualTo(first)
     }
 
@@ -35,7 +35,7 @@ class MergeBaseTest : DynamicStructureAware() {
         kgit.commit("B - 1")
         val b = kgit.commit("Commit B")
 
-        val base = kgit.mergeBase(a, b)
+        val base = kgit.getMergeBase(a, b)
         assertThat(base).isEqualTo(c)
     }
 

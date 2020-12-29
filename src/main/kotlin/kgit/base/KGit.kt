@@ -47,14 +47,17 @@ class KGit(private val data: ObjectDatabase, private val diff: Diff) {
         }
     }
 
-    private fun readTreeMerged(headTree: Oid, otherTree: Oid) {
+    private fun readTreeMerged(baseTree: Oid, headTree: Oid, otherTree: Oid) {
+        fun Oid.asComparableTree() = getComparableTree(this)
+
         File(data.workDir).emptyDir()
-        diff.mergeTrees(getComparableTree(headTree), getComparableTree(otherTree)).forEach { (path, content) ->
-            File(path).apply {
-                createNewFileWithinHierarchy()
-                writeText(content)
+        diff.mergeTrees(baseTree.asComparableTree(), headTree.asComparableTree(), otherTree.asComparableTree())
+            .forEach { (path, content) ->
+                File(path).apply {
+                    createNewFileWithinHierarchy()
+                    writeText(content)
+                }
             }
-        }
     }
 
     internal fun getTree(oid: Oid): Tree {
@@ -190,11 +193,13 @@ class KGit(private val data: ObjectDatabase, private val diff: Diff) {
     fun merge(other: Oid) {
         val headCommit = getCommit(data.getHead().oid)
         val otherCommit = getCommit(other)
+        val base = getCommit(getMergeBase(other, data.getHead().oid))
+
         data.updateRef("MERGE_HEAD", RefValue(symbolic = false, value = other.value))
-        readTreeMerged(headCommit.treeOid, otherCommit.treeOid)
+        readTreeMerged(base.treeOid, otherCommit.treeOid, headCommit.treeOid)
     }
 
-    fun mergeBase(oid1: Oid, oid2: Oid): Oid {
+    fun getMergeBase(oid1: Oid, oid2: Oid): Oid {
         val parents1 = listCommitsAndParents(listOf(oid1))
         val parents2 = listCommitsAndParents(listOf(oid2))
         return parents2.first { it in parents1 }

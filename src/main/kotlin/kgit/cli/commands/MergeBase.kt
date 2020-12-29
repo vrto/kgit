@@ -12,7 +12,7 @@ class MergeBase(private val kgit: KGit)
     private val commit2: String by argument("Commit 2 to compare")
 
     override fun run() {
-        val base = kgit.mergeBase(commit1.toOid(), commit2.toOid())
+        val base = kgit.getMergeBase(commit1.toOid(), commit2.toOid())
         echo(base)
     }
 }
