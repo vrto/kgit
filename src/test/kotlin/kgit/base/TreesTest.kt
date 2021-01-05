@@ -3,8 +3,11 @@ package kgit.base
 import assertk.assertAll
 import assertk.assertThat
 import assertk.assertions.*
-import kgit.*
+import kgit.DynamicStructureAware
+import kgit.assertFilesChanged
+import kgit.assertFilesRestored
 import kgit.data.TYPE_TREE
+import kgit.modifyCurrentWorkingDirFiles
 import org.junit.jupiter.api.Test
 
 class TreesTest : DynamicStructureAware() {
@@ -42,7 +45,7 @@ class TreesTest : DynamicStructureAware() {
         modifyCurrentWorkingDirFiles()
 
         assertFilesChanged()
-        kgit.readTree(treeOid, basePath = "$DYNAMIC_STRUCTURE/")
+        kgit.readTree(treeOid)
         assertFilesRestored()
     }
 }

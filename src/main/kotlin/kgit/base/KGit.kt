@@ -1,5 +1,7 @@
 package kgit.base
 
+import kgit.base.MergeResult.FAST_FORWARDED
+import kgit.base.MergeResult.MERGED
 import kgit.base.Tree.FileState
 import kgit.data.*
 import kgit.diff.ComparableTree
@@ -35,9 +37,9 @@ class KGit(private val data: ObjectDatabase, private val diff: Diff) {
         return data.hashObject(rawBytes, TYPE_TREE)
     }
 
-    fun readTree(treeOid: Oid, basePath: String = "./") {
-        File(basePath).emptyDir()
-        val tree = getTree(treeOid).parseState(basePath, ::getTree)
+    fun readTree(treeOid: Oid) {
+        File(data.workDir).emptyDir()
+        val tree = getTree(treeOid).parseState("${data.workDir}/", ::getTree)
         tree.forEach {
             val obj = data.getObject(it.oid, expectedType = TYPE_BLOB)
             File(it.path).apply {
@@ -113,7 +115,7 @@ class KGit(private val data: ObjectDatabase, private val diff: Diff) {
     fun checkout(name: String) {
         val oid = getOid(name)
         val commit = getCommit(oid)
-        readTree(commit.treeOid, "${data.workDir}/")
+        readTree(commit.treeOid)
 
         if (name.isBranch()) {
             data.setHead(RefValue(symbolic = true, value = "refs/heads/$name"), deref = false)
@@ -190,13 +192,23 @@ class KGit(private val data: ObjectDatabase, private val diff: Diff) {
         data.setHead(oid.toDirectRef())
     }
 
-    fun merge(other: Oid) {
-        val headCommit = getCommit(data.getHead().oid)
+    fun merge(other: Oid): MergeResult {
+        val head = data.getHead().oid
+        val mergeBase = getMergeBase(other, data.getHead().oid)
         val otherCommit = getCommit(other)
-        val base = getCommit(getMergeBase(other, data.getHead().oid))
+
+        if (mergeBase == head) {
+            readTree(treeOid = otherCommit.treeOid)
+            data.setHead(RefValue(symbolic = false, value = other.value))
+            return FAST_FORWARDED
+        }
 
         data.updateRef("MERGE_HEAD", RefValue(symbolic = false, value = other.value))
-        readTreeMerged(base.treeOid, otherCommit.treeOid, headCommit.treeOid)
+        val baseCommit = getCommit(getMergeBase(other, data.getHead().oid))
+        val headCommit = getCommit(data.getHead().oid)
+        readTreeMerged(baseCommit.treeOid, otherCommit.treeOid, headCommit.treeOid)
+
+        return MERGED
     }
 
     fun getMergeBase(oid1: Oid, oid2: Oid): Oid {
@@ -205,4 +217,8 @@ class KGit(private val data: ObjectDatabase, private val diff: Diff) {
         return parents2.first { it in parents1 }
     }
 
+}
+
+enum class MergeResult {
+    MERGED, FAST_FORWARDED
 }

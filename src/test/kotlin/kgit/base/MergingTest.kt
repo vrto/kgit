@@ -4,10 +4,9 @@ import assertk.assertThat
 import assertk.assertions.isEqualTo
 import assertk.assertions.isNotNull
 import assertk.assertions.isNull
-import kgit.DYNAMIC_STRUCTURE
-import kgit.DynamicStructureAware
-import kgit.modifyCurrentWorkingDirFiles
-import kgit.modifyOneSourceFile
+import kgit.*
+import kgit.base.MergeResult.FAST_FORWARDED
+import kgit.base.MergeResult.MERGED
 import org.junit.jupiter.api.Test
 import java.io.File
 
@@ -42,7 +41,8 @@ class MergingTest : DynamicStructureAware() {
         modifyCurrentWorkingDirFiles()
         kgit.commit("set new HEAD")
 
-        kgit.merge(orig)
+        val result = kgit.merge(orig)
+        assertThat(result).isEqualTo(MERGED)
 
         assertThat(data.getMergeHead()!!.value).isEqualTo(orig.value)
     }
@@ -95,7 +95,8 @@ class MergingTest : DynamicStructureAware() {
         """.trimIndent())
         kgit.commit("Version B")
 
-        kgit.merge(versionA)
+        val result = kgit.merge(versionA)
+        assertThat(result).isEqualTo(MERGED)
 
         assertThat(File("$DYNAMIC_STRUCTURE/source.py").readText()).isEqualTo("""
             fun be_a_cat(): 
@@ -109,5 +110,39 @@ class MergingTest : DynamicStructureAware() {
         """.trimIndent())
 
         assertThat(data.getMergeHead()!!.value).isEqualTo(versionA.value)
+    }
+
+    @Test
+    fun `should do a fast-forward merge`() {
+        // HEAD is the common ancestor of HEAD and some-branch
+
+        //     HEAD
+        //     v
+        // o---o
+        //     \
+        //      --o---o
+        //            ^
+        //            some-branch
+        kgit.commit("start")
+        val head = kgit.commit("HEAD")
+        kgit.createBranch("some-branch", head)
+        kgit.checkout("some-branch")
+
+        modifyCurrentWorkingDirFiles()
+        kgit.commit("new branch commit 1")
+        val someBranch = kgit.commit("some-branch ref")
+
+        // move HEAD back
+        kgit.checkout(head.value)
+        assertThat(data.getHead().oidValue).isEqualTo(head.value)
+
+        // ffwd merge
+        val result = kgit.merge(someBranch)
+        assertThat(result).isEqualTo(FAST_FORWARDED)
+        assertFilesChanged()
+
+        // HEAD moved to the latest commit
+        assertThat(data.getHead().oidValue).isEqualTo(someBranch.value)
+        assertThat(data.getMergeHead()).isNull()
     }
 }
