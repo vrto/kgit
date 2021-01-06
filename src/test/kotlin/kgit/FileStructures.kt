@@ -6,6 +6,7 @@ import assertk.assertions.isFalse
 import java.io.File
 
 val DYNAMIC_STRUCTURE = "src/test/resources/dynamic-structure"
+val DYNAMIC_REMOTE_STRUCTURE = "src/test/resources/remote/remote-structure"
 val STATIC_STRUCTURE = "src/test/resources/test-structure"
 
 fun createDynamicTestStructure(): File {
@@ -28,6 +29,31 @@ fun createDynamicTestStructure(): File {
     File("$DYNAMIC_STRUCTURE/subdir/nested.txt").apply {
         require(createNewFile())
         writeText("orig nested content")
+    }
+
+    return dirToWrite
+}
+
+fun createDynamicRemoteTestStructure(): File {
+    // desired state:
+    // ./remote-structure
+    // ./remote-structure/flat.txt
+    // ./remote-structure/subdir/nested2.txt
+
+    val dirToWrite = File(DYNAMIC_REMOTE_STRUCTURE)
+    assertThat(dirToWrite.exists()).isFalse()
+    require(dirToWrite.mkdirs())
+
+    File("$DYNAMIC_REMOTE_STRUCTURE/flat.txt").apply {
+        require(createNewFile())
+        writeText("orig content")
+    }
+
+    require(File("$DYNAMIC_REMOTE_STRUCTURE/subdir").mkdir())
+
+    File("$DYNAMIC_STRUCTURE/subdir/nested2.txt").apply {
+        require(createNewFile())
+        writeText("orig nested content no 2")
     }
 
     return dirToWrite
