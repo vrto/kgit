@@ -12,7 +12,7 @@ import kgit.remote.Remote
 private val data = ObjectDatabase(workDir = ".")
 private val diff = Diff(data)
 private val kgit = KGit(data, diff)
-private val remote = Remote()
+private val remote = Remote(data)
 
 fun main(args: Array<String>) {
     KGitCli()

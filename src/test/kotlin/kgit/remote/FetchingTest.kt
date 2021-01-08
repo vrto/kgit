@@ -1,6 +1,7 @@
 package kgit.remote
 
 import assertk.assertThat
+import assertk.assertions.containsAll
 import assertk.assertions.containsExactly
 import assertk.assertions.containsOnly
 import kgit.DYNAMIC_REMOTE_STRUCTURE
@@ -18,7 +19,7 @@ class FetchingTest : DynamicStructureAware() {
     val remoteData = ObjectDatabase(DYNAMIC_REMOTE_STRUCTURE)
     val remoteKgit = KGit(remoteData, Diff(remoteData))
 
-    val remote = Remote()
+    val remote = Remote(data)
 
     @BeforeEach
     fun createDynamicRemoteStructure() {
@@ -37,7 +38,7 @@ class FetchingTest : DynamicStructureAware() {
     }
 
     @Test
-    fun `should fetch multiple remote branches`() {
+    fun `should fetch multiple remote branches and combine with local refs`() {
         val first = remoteKgit.commit("first")
         remoteKgit.createBranch("master", first)
         remoteKgit.createBranch("feature", first)
@@ -45,7 +46,14 @@ class FetchingTest : DynamicStructureAware() {
         // non-branch refs are ignored
         remoteKgit.tag("ignored-tag", first)
 
+        val firstLocal = kgit.commit("first local")
+        kgit.createBranch("master", firstLocal)
+
         val refs = remote.fetch(DYNAMIC_REMOTE_STRUCTURE)
         assertThat(refs).containsOnly("heads/master", "heads/feature", "heads/testing-something")
+
+        val localRefs = data.iterateRefs().map { it.name }
+        assertThat(localRefs).containsAll(
+            "HEAD", "heads/master", "remote/master", "remote/feature", "remote/testing-something")
     }
 }

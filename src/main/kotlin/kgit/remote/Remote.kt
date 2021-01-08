@@ -1,15 +1,22 @@
 package kgit.remote
 
+import kgit.data.NamedRefValue
 import kgit.data.ObjectDatabase
 
-class Remote {
+class Remote(private val data: ObjectDatabase) {
 
-    fun fetch(remotePath: String): List<String> = getRemoteRefs(remotePath, prefix = "heads/")
+    fun fetch(remotePath: String): List<String> {
+        val remoteRefs = getRemoteRefs(remotePath, prefix = "heads/")
+        remoteRefs.forEach { ref ->
+            val refName = ref.name.replace("heads", "remote")
+            data.updateRef("refs/$refName", ref.ref)
+        }
+        return remoteRefs.map { it.name }
+    }
 
-    private fun getRemoteRefs(remotePath: String, prefix: String): List<String> {
+    private fun getRemoteRefs(remotePath: String, prefix: String): List<NamedRefValue> {
         val remoteData = ObjectDatabase(remotePath)
         return remoteData.iterateRefs()
-            .map { it.name }
-            .filter { it.contains(prefix) }
+            .filter { it.name.contains(prefix) }
     }
 }
