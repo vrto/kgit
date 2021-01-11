@@ -4,6 +4,7 @@ import kgit.base.createNewFileWithinHierarchy
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.StandardCopyOption.REPLACE_EXISTING
 import java.security.MessageDigest
 
 internal const val KGIT_DIR = ".kgit"
@@ -115,6 +116,17 @@ class ObjectDatabase(val workDir: String) {
     fun deleteRef(refName: String, deref: Boolean = true) {
         val ref = getRefInternal(refName, deref).name
         File("$workDir/$KGIT_DIR/$ref").delete()
+    }
+
+    fun fetchObjectIfMissing(oid: Oid, remoteKGitDir: String) {
+        // object already in the local db
+        val target = File("$workDir/$OBJECTS_DIR/$oid")
+        if (target.exists()) return
+
+        target.createNewFileWithinHierarchy()
+
+        val source = File("$remoteKGitDir/$OBJECTS_DIR/$oid")
+        Files.copy(source.toPath(), target.toPath(), REPLACE_EXISTING)
     }
 }
 

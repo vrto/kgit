@@ -51,7 +51,7 @@ fun createDynamicRemoteTestStructure(): File {
 
     require(File("$DYNAMIC_REMOTE_STRUCTURE/subdir").mkdir())
 
-    File("$DYNAMIC_STRUCTURE/subdir/nested2.txt").apply {
+    File("$DYNAMIC_REMOTE_STRUCTURE/subdir/nested2.txt").apply {
         require(createNewFile())
         writeText("orig nested content no 2")
     }

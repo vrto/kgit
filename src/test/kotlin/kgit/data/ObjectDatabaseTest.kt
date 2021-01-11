@@ -2,7 +2,9 @@ package kgit.data
 
 import assertk.assertThat
 import assertk.assertions.*
+import kgit.DYNAMIC_REMOTE_STRUCTURE
 import kgit.STATIC_STRUCTURE
+import kgit.createDynamicRemoteTestStructure
 import org.junit.jupiter.api.*
 import java.io.File
 import java.nio.file.Files
@@ -221,6 +223,38 @@ class ObjectDatabaseTest {
 
             assertThat(File("$KGIT_DIR/refs/heads/branch1").exists()).isTrue()
             assertThat(File("$KGIT_DIR/refs/tags/tag1").exists()).isFalse()
+        }
+    }
+
+    @Nested
+    inner class Fetching {
+
+        val remoteData = ObjectDatabase(DYNAMIC_REMOTE_STRUCTURE)
+
+        @BeforeEach
+        fun setUpRemoteObjectDb() {
+            Path.of(DYNAMIC_REMOTE_STRUCTURE).toFile().deleteRecursively()
+            createDynamicRemoteTestStructure()
+            remoteData.init()
+        }
+
+        @BeforeEach
+        fun initLocalDb() {
+            objectDb.init()
+        }
+
+        @Test
+        fun `fetching an already existing remote object should do nothing`() {
+            val oid = objectDb.hashObject("test object".toByteArray(), TYPE_BLOB)
+            objectDb.fetchObjectIfMissing(oid, DYNAMIC_REMOTE_STRUCTURE)
+            assertThat(objectDb.getObject(oid, TYPE_BLOB)).isEqualTo("test object")
+        }
+
+        @Test
+        fun `should fetch a remote object into the local object db`() {
+            val remoteOid = remoteData.hashObject("remote test object".toByteArray(), TYPE_BLOB)
+            objectDb.fetchObjectIfMissing(remoteOid, DYNAMIC_REMOTE_STRUCTURE)
+            assertThat(objectDb.getObject(remoteOid, TYPE_BLOB)).isEqualTo("remote test object")
         }
     }
 }
