@@ -169,6 +169,14 @@ class KGit(private val data: ObjectDatabase, private val diff: Diff) {
         return visited.toList()
     }
 
+    fun listObjectsInCommits(commitOids: List<Oid>): List<Oid> {
+        val commitsTree = listCommitsAndParents(commitOids)
+        val commits = commitsTree.map { getCommit(it) }
+        return commits.map { commit ->
+            getTree(commit.treeOid).parseState("${data.workDir}/", ::getTree).map { it.oid }
+        }.flatten().distinct()
+    }
+
     fun createBranch(name: String, startPoint: Oid) {
         data.updateRef("refs/heads/$name", startPoint.toDirectRef())
     }

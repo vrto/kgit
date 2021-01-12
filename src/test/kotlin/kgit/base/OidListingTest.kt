@@ -2,8 +2,13 @@ package kgit.base
 
 import assertk.assertThat
 import assertk.assertions.containsExactly
+import assertk.assertions.containsOnly
+import assertk.assertions.hasSize
+import kgit.DYNAMIC_STRUCTURE
 import kgit.DynamicStructureAware
+import kgit.data.TYPE_BLOB
 import org.junit.jupiter.api.Test
+import java.io.File
 
 class OidListingTest : DynamicStructureAware() {
 
@@ -59,4 +64,29 @@ class OidListingTest : DynamicStructureAware() {
     }
 
     private fun tagsToOids(vararg tags: String) = tags.map(kgit::getOid)
+
+    @Test
+    fun `should iterate objects in commits`() {
+        // original objects from dynamic structure
+        val first = kgit.commit("First commit")
+
+        generateNewFile("second")
+        val second = kgit.commit("Second commit")
+
+        generateNewFile("third")
+        val third = kgit.commit("Third commit")
+
+        val objects = kgit.listObjectsInCommits(listOf(first, second, third))
+        assertThat(objects).hasSize(4)
+
+        val contents = objects.map { data.getObject(it, TYPE_BLOB) }
+        assertThat(contents).containsOnly("orig content", "orig nested content", "second", "third")
+    }
+
+    private fun generateNewFile(name: String) {
+        File("$DYNAMIC_STRUCTURE/$name").apply {
+            require(createNewFile())
+            writeText(name)
+        }
+    }
 }
