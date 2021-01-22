@@ -59,6 +59,13 @@ fun createDynamicRemoteTestStructure(): File {
     return dirToWrite
 }
 
+fun addFileToRemoteStructure(name: String) {
+    File("$DYNAMIC_REMOTE_STRUCTURE/$name").apply {
+        require(createNewFile())
+        writeText(name)
+    }
+}
+
 fun modifyOneFile() {
     File("$DYNAMIC_STRUCTURE/flat.txt").writeText("changed content")
 }

@@ -67,7 +67,7 @@ class KGit(private val data: ObjectDatabase, private val diff: Diff) {
         val lines = rawTree.split("\n")
         return lines.map {
             val parts = it.split(" ")
-            require(parts.size == 3) { "Expected three lines: type, oid, name" }
+            require(parts.size == 3) { "Expected three lines: type, oid, name. \nFound: $rawTree." }
             Tree.Entry(type = parts[0], oid = Oid(parts[1]), name = parts[2])
         }.toTree()
     }
@@ -172,9 +172,8 @@ class KGit(private val data: ObjectDatabase, private val diff: Diff) {
     fun listObjectsInCommits(commitOids: List<Oid>): List<Oid> {
         val commitsTree = listCommitsAndParents(commitOids)
         val commits = commitsTree.map { getCommit(it) }
-        return commits.map { commit ->
-            getTree(commit.treeOid).parseState("${data.workDir}/", ::getTree).map { it.oid }
-        }.flatten().distinct()
+        val objects = commits.flatMap { listOf(it.treeOid) + getTree(it.treeOid).listObjects(::getTree) }
+        return (commitOids + objects).distinct()
     }
 
     fun createBranch(name: String, startPoint: Oid) {

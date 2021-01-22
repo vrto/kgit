@@ -6,7 +6,10 @@ import assertk.assertions.containsOnly
 import assertk.assertions.hasSize
 import kgit.DYNAMIC_STRUCTURE
 import kgit.DynamicStructureAware
+import kgit.data.Oid
 import kgit.data.TYPE_BLOB
+import kgit.data.TYPE_COMMIT
+import kgit.data.TYPE_TREE
 import org.junit.jupiter.api.Test
 import java.io.File
 
@@ -67,7 +70,6 @@ class OidListingTest : DynamicStructureAware() {
 
     @Test
     fun `should iterate objects in commits`() {
-        // original objects from dynamic structure
         val first = kgit.commit("First commit")
 
         generateNewFile("second")
@@ -77,10 +79,15 @@ class OidListingTest : DynamicStructureAware() {
         val third = kgit.commit("Third commit")
 
         val objects = kgit.listObjectsInCommits(listOf(first, second, third))
-        assertThat(objects).hasSize(4)
+        assertThat(objects).hasSize(
+            3 // commits
+            + 4 // trees
+            + 4 // files
+        )
 
-        val contents = objects.map { data.getObject(it, TYPE_BLOB) }
-        assertThat(contents).containsOnly("orig content", "orig nested content", "second", "third")
+        assertThat(objects.unwrap(TYPE_COMMIT)).hasSize(3)
+        assertThat(objects.unwrap(TYPE_TREE)).hasSize(4)
+        assertThat(objects.unwrap(TYPE_BLOB)).containsOnly("orig content", "orig nested content", "second", "third")
     }
 
     private fun generateNewFile(name: String) {
@@ -88,5 +95,9 @@ class OidListingTest : DynamicStructureAware() {
             require(createNewFile())
             writeText(name)
         }
+    }
+
+    private fun List<Oid>.unwrap(type: String): List<String> = mapNotNull { oid ->
+        data.tryParseObject(oid, type)
     }
 }

@@ -1,22 +1,35 @@
 package kgit.remote
 
+import kgit.base.KGit
 import kgit.data.NamedRefValue
 import kgit.data.ObjectDatabase
+import kgit.diff.Diff
 
-class Remote(private val data: ObjectDatabase) {
+class Remote(private val localData: ObjectDatabase) {
 
     fun fetch(remotePath: String): List<String> {
-        val remoteRefs = getRemoteRefs(remotePath, prefix = "heads/")
-        remoteRefs.forEach { ref ->
-            val refName = ref.name.replace("heads", "remote")
-            data.updateRef("refs/$refName", ref.ref)
-        }
+        val remoteData = ObjectDatabase(remotePath)
+        val remoteRefs = remoteData.getRemoteRefs(prefix = "heads/")
+        val remoteKgit = KGit(remoteData, Diff(remoteData))
+
+        remoteKgit.downloadObjects(remoteRefs, remotePath)
+        localData.updateLocalRefs(remoteRefs)
+
         return remoteRefs.map { it.name }
     }
 
-    private fun getRemoteRefs(remotePath: String, prefix: String): List<NamedRefValue> {
-        val remoteData = ObjectDatabase(remotePath)
-        return remoteData.iterateRefs()
-            .filter { it.name.contains(prefix) }
+    private fun ObjectDatabase.getRemoteRefs(prefix: String): List<NamedRefValue> = iterateRefs()
+        .filter { it.name.contains(prefix) }
+
+    private fun KGit.downloadObjects(remoteRefs: List<NamedRefValue>, remotePath: String) {
+        val objects = listObjectsInCommits(remoteRefs.map { it.ref.oid })
+        objects.forEach { localData.fetchObjectIfMissing(it, remotePath) }
+    }
+
+    private fun ObjectDatabase.updateLocalRefs(remoteRefs: List<NamedRefValue>) {
+        remoteRefs.forEach { ref ->
+            val refName = ref.name.replace("heads", "remote")
+            updateRef("refs/$refName", ref.ref)
+        }
     }
 }

@@ -26,6 +26,14 @@ class Tree(private val entries: List<Entry>) : Iterable<Tree.Entry> {
         }
     }.flatten()
 
+    fun listObjects(treeLoader: (Oid) -> Tree): Set<Oid> = entries.flatMap { entry ->
+        when (entry.type) {
+            TYPE_BLOB -> listOf(entry.oid)
+            TYPE_TREE -> listOf(entry.oid) + treeLoader(entry.oid).listObjects(treeLoader)
+            else -> throw IllegalStateException("Unknown object type ${entry.type}")
+        }
+    }.toSet()
+
     override fun toString() = entries.joinToString(separator = "\n") { it.toString() }
 
     override fun iterator() = entries.iterator()

@@ -64,6 +64,14 @@ class ObjectDatabase(val workDir: String) {
         return String(allBytes.filterIndexed { index, _ -> index > separatorPos }.toByteArray())
     }
 
+    fun tryParseObject(oid: Oid, expectedType: String) = try {
+        getObject(oid, expectedType)
+    } catch (e: InvalidTypeException) {
+        null
+    }
+
+    fun tryParseBlob(oid: Oid): String? = tryParseObject(oid, TYPE_BLOB)
+
     fun setHead(ref: RefValue, deref: Boolean = true) {
         updateRef("HEAD", ref, deref)
     }
