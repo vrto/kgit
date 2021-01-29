@@ -12,7 +12,7 @@ import kgit.remote.Remote
 private val data = ObjectDatabase(workDir = ".")
 private val diff = Diff(data)
 private val kgit = KGit(data, diff)
-private val remote = Remote(data)
+private val remote = Remote(data, kgit)
 
 fun main(args: Array<String>) {
     KGitCli()
@@ -35,6 +35,7 @@ fun main(args: Array<String>) {
             Merge(kgit),
             MergeBase(kgit),
             Fetch(remote),
+            Push(remote)
         ).main(args)
 }
 

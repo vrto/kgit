@@ -6,30 +6,13 @@ import assertk.assertions.containsExactly
 import assertk.assertions.containsOnly
 import assertk.assertions.isEqualTo
 import kgit.DYNAMIC_REMOTE_STRUCTURE
-import kgit.DynamicStructureAware
+import kgit.DynamicRemoteStructureAware
 import kgit.addFileToRemoteStructure
 import kgit.base.KGit
-import kgit.createDynamicRemoteTestStructure
-import kgit.data.ObjectDatabase
-import kgit.diff.Diff
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import java.nio.file.Path
 
-class FetchingTest : DynamicStructureAware() {
-
-    val remoteData = ObjectDatabase(DYNAMIC_REMOTE_STRUCTURE)
-    val remoteKgit = KGit(remoteData, Diff(remoteData))
-
-    val remote = Remote(data)
-
-    @BeforeEach
-    fun createDynamicRemoteStructure() {
-        Path.of(DYNAMIC_REMOTE_STRUCTURE).toFile().deleteRecursively()
-        createDynamicRemoteTestStructure()
-        remoteData.init()
-    }
+class FetchingTest : DynamicRemoteStructureAware() {
 
     @Test
     fun `should fetch the single remote master branch with no exta objects`() {

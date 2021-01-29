@@ -127,14 +127,26 @@ class ObjectDatabase(val workDir: String) {
     }
 
     fun fetchObjectIfMissing(oid: Oid, remoteKGitDir: String) {
-        // object already in the local db
-        val target = File("$workDir/$OBJECTS_DIR/$oid")
-        if (target.exists()) return
+        createNewTargeIfNeeded(oid, "$workDir/$OBJECTS_DIR")?.let {
+            val source = File("$remoteKGitDir/$OBJECTS_DIR/$oid")
+            Files.copy(source.toPath(), it.toPath(), REPLACE_EXISTING)
+        }
+    }
 
-        target.createNewFileWithinHierarchy()
+    fun pushObject(oid: Oid, remoteKGitDir: String) {
+        createNewTargeIfNeeded(oid, "$remoteKGitDir/$OBJECTS_DIR")?.let {
+            val source = File("$workDir/$OBJECTS_DIR/$oid")
+            Files.copy(source.toPath(), it.toPath(), REPLACE_EXISTING)
+        }
+    }
 
-        val source = File("$remoteKGitDir/$OBJECTS_DIR/$oid")
-        Files.copy(source.toPath(), target.toPath(), REPLACE_EXISTING)
+    private fun createNewTargeIfNeeded(oid: Oid, objectsDirPath: String): File? {
+        val target = File("$objectsDirPath/$oid")
+
+        return when {
+            target.exists() -> null
+            else -> target.also (File::createNewFileWithinHierarchy)
+        }
     }
 }
 

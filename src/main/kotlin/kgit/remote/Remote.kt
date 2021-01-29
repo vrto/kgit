@@ -1,11 +1,10 @@
 package kgit.remote
 
 import kgit.base.KGit
-import kgit.data.NamedRefValue
-import kgit.data.ObjectDatabase
+import kgit.data.*
 import kgit.diff.Diff
 
-class Remote(private val localData: ObjectDatabase) {
+class Remote(private val localData: ObjectDatabase, private val localKgit: KGit) {
 
     fun fetch(remotePath: String): List<String> {
         val remoteData = ObjectDatabase(remotePath)
@@ -31,5 +30,15 @@ class Remote(private val localData: ObjectDatabase) {
             val refName = ref.name.replace("heads", "remote")
             updateRef("refs/$refName", ref.ref)
         }
+    }
+
+    fun push(remotePath: String, refName: String) {
+        val localRef = localData.getRef(refName).value.takeIf { it.toOidOrNull() != null }
+            ?: throw IllegalArgumentException("$refName branch does not exist!")
+        val objectsToPush = localKgit.listObjectsInCommits(listOf(localRef.toOid()))
+        objectsToPush.forEach { localData.pushObject(it, remotePath) }
+
+        val remoteData = ObjectDatabase(remotePath)
+        remoteData.updateRef(refName, RefValue(value = localRef))
     }
 }
