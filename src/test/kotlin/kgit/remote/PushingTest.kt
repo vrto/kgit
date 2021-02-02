@@ -5,6 +5,8 @@ import assertk.assertions.contains
 import assertk.assertions.containsAll
 import assertk.assertions.doesNotContain
 import assertk.assertions.isEqualTo
+import io.mockk.spyk
+import io.mockk.verify
 import kgit.DYNAMIC_REMOTE_STRUCTURE
 import kgit.DynamicRemoteStructureAware
 import kgit.addFileToLocalStructure
@@ -14,6 +16,9 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
 class PushingTest : DynamicRemoteStructureAware() {
+
+    val observableData = spyk(data)
+    override fun setData() = observableData
 
     @Test
     fun `should throw an error on pushing a non-existent branch`() {
@@ -27,7 +32,7 @@ class PushingTest : DynamicRemoteStructureAware() {
         val first = kgit.commit("first")
         kgit.createBranch("master", first)
 
-        assertThat(remoteData.listRefs()).doesNotContain("master")
+        assertThat(remoteData.listRefs()).doesNotContain("heads/master")
         remote.push(DYNAMIC_REMOTE_STRUCTURE, "refs/heads/master")
         assertThat(remoteData.listRefs()).contains("heads/master")
     }
@@ -41,7 +46,8 @@ class PushingTest : DynamicRemoteStructureAware() {
         addFileToLocalStructure("new_stuff")
         val localCommit = kgit.commit("new stuff added")
 
-        val firstRemote = remoteKgit.commit("first remote")
+        // copy the same initial commit
+        val firstRemote = remoteKgit.commit("first")
         remoteKgit.createBranch("master", firstRemote)
 
         // remote kgit does not 'see' local commit
@@ -54,6 +60,9 @@ class PushingTest : DynamicRemoteStructureAware() {
         // remote kgit should 'see' local commit
         val fetchedCommit = remoteKgit.getCommit(localCommit)
         assertThat(fetchedCommit.message).isEqualTo("new stuff added")
+
+        val allRemoteObjects = remoteKgit.parseAllBlobs(remoteData.listRefs())
+        assertThat(allRemoteObjects).containsAll("new_stuff")
     }
 
     @Test
@@ -67,7 +76,7 @@ class PushingTest : DynamicRemoteStructureAware() {
         addFileToLocalStructure("feature_idea")
         kgit.commit("feature idea")
 
-        val firstRemote = remoteKgit.commit("first remote")
+        val firstRemote = remoteKgit.commit("first")
         remoteKgit.createBranch("master", firstRemote)
 
         // sync master
@@ -84,10 +93,32 @@ class PushingTest : DynamicRemoteStructureAware() {
         assertThat(allRemoteObjects).containsAll("feature_idea")
     }
 
+    @Test
+    fun `should push changes to the remote efficiently`() {
+        val first = kgit.commit("first")
+        kgit.createBranch("master", first)
+
+        kgit.checkout("master")
+        addFileToLocalStructure("new_file")
+        kgit.commit("add new_file")
+
+        val firstRemote = remoteKgit.commit("first")
+        remoteKgit.createBranch("master", firstRemote)
+
+        remote.push(DYNAMIC_REMOTE_STRUCTURE, "refs/heads/master")
+        verify(exactly = 3) { // new_file commit, tree for the commit, new_file content
+            observableData.pushObject(any(), any())
+        }
+
+        val allRemoteObjects = remoteKgit.parseAllBlobs(remoteData.listRefs())
+        assertThat(allRemoteObjects).containsAll("new_file")
+    }
+
     private fun ObjectDatabase.listRefs() = iterateRefs().map { it.name }
 
     private fun KGit.parseAllBlobs(refs: List<String>): List<String> {
         val oids = refs.map(this::getOid)
         return listObjectsInCommits(oids).mapNotNull(remoteData::tryParseBlob)
     }
+
 }

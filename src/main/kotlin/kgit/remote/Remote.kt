@@ -33,12 +33,26 @@ class Remote(private val localData: ObjectDatabase, private val localKgit: KGit)
     }
 
     fun push(remotePath: String, refName: String) {
+        val remoteData = ObjectDatabase(remotePath)
+        val remoteRefs = remoteData.getRemoteRefs(prefix = "heads/")
         val localRef = localData.getRef(refName).value.takeIf { it.toOidOrNull() != null }
             ?: throw IllegalArgumentException("$refName branch does not exist!")
-        val objectsToPush = localKgit.listObjectsInCommits(listOf(localRef.toOid()))
-        objectsToPush.forEach { localData.pushObject(it, remotePath) }
 
-        val remoteData = ObjectDatabase(remotePath)
+        val knownRemoteRefs = remoteRefs
+            .filter { localData.objectExists(it.ref.oid) }
+            .map { it.ref.oid }
+
+        val remoteObjects = localKgit.listObjectsInCommits(knownRemoteRefs)
+            .distinct()
+
+        val localObjects = localKgit.listObjectsInCommits(listOf(localRef.toOid()))
+            .distinct()
+
+        val objectsToPush = localObjects - remoteObjects
+        objectsToPush.forEach {
+            localData.pushObject(it, remotePath)
+        }
+
         remoteData.updateRef(refName, RefValue(value = localRef))
     }
 }

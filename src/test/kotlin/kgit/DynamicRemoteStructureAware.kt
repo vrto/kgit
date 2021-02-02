@@ -12,7 +12,9 @@ abstract class DynamicRemoteStructureAware : DynamicStructureAware() {
     protected val remoteData = ObjectDatabase(DYNAMIC_REMOTE_STRUCTURE)
     protected val remoteKgit = KGit(remoteData, Diff(remoteData))
 
-    protected val remote = Remote(data, kgit)
+    protected val remote by lazy {
+        Remote(setData(), kgit)
+    }
 
     @BeforeEach
     fun createDynamicRemoteStructure() {
@@ -20,4 +22,6 @@ abstract class DynamicRemoteStructureAware : DynamicStructureAware() {
         createDynamicRemoteTestStructure()
         remoteData.init()
     }
+
+    open fun setData() = data
 }

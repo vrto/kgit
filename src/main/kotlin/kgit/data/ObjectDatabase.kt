@@ -148,12 +148,14 @@ class ObjectDatabase(val workDir: String) {
             else -> target.also (File::createNewFileWithinHierarchy)
         }
     }
+
+    fun objectExists(oid: Oid): Boolean = File("$workDir/$OBJECTS_DIR/$oid").exists()
 }
 
 class InvalidTypeException(expected: String, actual: String)
     : RuntimeException("Expected $expected, got $actual")
 
-inline class Oid(val value: String) {
+data class Oid(val value: String) {
     override fun toString() = value
     fun toDirectRef() = RefValue(symbolic = false, value = this.value)
 }
