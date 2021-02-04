@@ -3,8 +3,7 @@ package kgit.remote
 import kgit.base.KGit
 import kgit.data.*
 import kgit.diff.Diff
-import kgit.remote.PushResult.FORCE_PUSH_REJECTED
-import kgit.remote.PushResult.UNKNOWN_REF
+import kgit.remote.PushResult.*
 
 class Remote(private val localData: ObjectDatabase, private val localKgit: KGit) {
 
@@ -41,7 +40,7 @@ class Remote(private val localData: ObjectDatabase, private val localKgit: KGit)
         val localRef = localData.getRef(refName).value.takeIf { it.toOidOrNull() != null }
             ?: return UNKNOWN_REF
 
-        if (remoteRef != null /* null -> new ref, that's OK */ && !localKgit.isAncestor(localRef.toOid(), remoteRef.ref.oid)) {
+        if (remoteRef != null /* null -> new ref, that's OK */ && remoteRef.isNotAncestor(localRef)) {
             return FORCE_PUSH_REJECTED
         }
 
@@ -62,8 +61,11 @@ class Remote(private val localData: ObjectDatabase, private val localKgit: KGit)
 
         remoteData.updateRef(refName, RefValue(value = localRef))
 
-        return PushResult.OK
+        return OK
     }
+
+    private fun NamedRefValue.isNotAncestor(localRef: String) =
+        !localKgit.isAncestor(localRef.toOid(), ref.oid)
 }
 
 enum class PushResult {
