@@ -10,8 +10,10 @@ import io.mockk.verify
 import kgit.DYNAMIC_REMOTE_STRUCTURE
 import kgit.DynamicRemoteStructureAware
 import kgit.addFileToLocalStructure
+import kgit.addFileToRemoteStructure
 import kgit.base.KGit
 import kgit.data.ObjectDatabase
+import kgit.remote.PushResult.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
@@ -21,10 +23,9 @@ class PushingTest : DynamicRemoteStructureAware() {
     override fun setData() = observableData
 
     @Test
-    fun `should throw an error on pushing a non-existent branch`() {
-        assertThrows<IllegalArgumentException> {
-            remote.push(DYNAMIC_REMOTE_STRUCTURE, "bogus")
-        }
+    fun `should reject a push on non-existing ref`() {
+        val result = remote.push(DYNAMIC_REMOTE_STRUCTURE, "bogus")
+        assertThat(result).isEqualTo(UNKNOWN_REF)
     }
 
     @Test
@@ -33,7 +34,10 @@ class PushingTest : DynamicRemoteStructureAware() {
         kgit.createBranch("master", first)
 
         assertThat(remoteData.listRefs()).doesNotContain("heads/master")
-        remote.push(DYNAMIC_REMOTE_STRUCTURE, "refs/heads/master")
+
+        val result = remote.push(DYNAMIC_REMOTE_STRUCTURE, "refs/heads/master")
+
+        assertThat(result).isEqualTo(OK)
         assertThat(remoteData.listRefs()).contains("heads/master")
     }
 
@@ -55,7 +59,8 @@ class PushingTest : DynamicRemoteStructureAware() {
             remoteKgit.getCommit(localCommit)
         }
 
-        remote.push(DYNAMIC_REMOTE_STRUCTURE, "refs/heads/master")
+        val result = remote.push(DYNAMIC_REMOTE_STRUCTURE, "refs/heads/master")
+        assertThat(result).isEqualTo(OK)
 
         // remote kgit should 'see' local commit
         val fetchedCommit = remoteKgit.getCommit(localCommit)
@@ -80,7 +85,8 @@ class PushingTest : DynamicRemoteStructureAware() {
         remoteKgit.createBranch("master", firstRemote)
 
         // sync master
-        remote.push(DYNAMIC_REMOTE_STRUCTURE, "refs/heads/master")
+        val result = remote.push(DYNAMIC_REMOTE_STRUCTURE, "refs/heads/master")
+        assertThat(result).isEqualTo(OK)
         assertThat(remoteData.listRefs()).containsAll("HEAD", "heads/master")
 
         // push the feature branch
@@ -105,13 +111,34 @@ class PushingTest : DynamicRemoteStructureAware() {
         val firstRemote = remoteKgit.commit("first")
         remoteKgit.createBranch("master", firstRemote)
 
-        remote.push(DYNAMIC_REMOTE_STRUCTURE, "refs/heads/master")
+        val result = remote.push(DYNAMIC_REMOTE_STRUCTURE, "refs/heads/master")
+        assertThat(result).isEqualTo(OK)
         verify(exactly = 3) { // new_file commit, tree for the commit, new_file content
             observableData.pushObject(any(), any())
         }
 
         val allRemoteObjects = remoteKgit.parseAllBlobs(remoteData.listRefs())
         assertThat(allRemoteObjects).containsAll("new_file")
+    }
+
+    @Test
+    fun `should reject force push`() {
+        val first = kgit.commit("first")
+        kgit.createBranch("master", first)
+
+        kgit.checkout("master")
+        addFileToLocalStructure("new_file")
+        kgit.commit("add new_file")
+
+        val firstRemote = remoteKgit.commit("first")
+        remoteKgit.createBranch("master", firstRemote)
+
+        remoteKgit.checkout("master")
+        addFileToRemoteStructure("another_file")
+        remoteKgit.commit("add another_file")
+
+        val result = remote.push(DYNAMIC_REMOTE_STRUCTURE, "refs/heads/master")
+        assertThat(result).isEqualTo(FORCE_PUSH_REJECTED)
     }
 
     private fun ObjectDatabase.listRefs() = iterateRefs().map { it.name }

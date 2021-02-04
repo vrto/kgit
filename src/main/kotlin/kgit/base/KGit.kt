@@ -224,6 +224,8 @@ class KGit(private val data: ObjectDatabase, private val diff: Diff) {
         return parents2.first { it in parents1 }
     }
 
+    fun isAncestor(commit: Oid, maybeAncestor: Oid): Boolean = maybeAncestor in listCommitsAndParents(listOf(commit))
+
 }
 
 enum class MergeResult {

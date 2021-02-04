@@ -3,6 +3,8 @@ package kgit.remote
 import kgit.base.KGit
 import kgit.data.*
 import kgit.diff.Diff
+import kgit.remote.PushResult.FORCE_PUSH_REJECTED
+import kgit.remote.PushResult.UNKNOWN_REF
 
 class Remote(private val localData: ObjectDatabase, private val localKgit: KGit) {
 
@@ -32,11 +34,16 @@ class Remote(private val localData: ObjectDatabase, private val localKgit: KGit)
         }
     }
 
-    fun push(remotePath: String, refName: String) {
+    fun push(remotePath: String, refName: String): PushResult {
         val remoteData = ObjectDatabase(remotePath)
         val remoteRefs = remoteData.getRemoteRefs(prefix = "heads/")
+        val remoteRef = remoteRefs.find { "refs/${it.name}" == refName }
         val localRef = localData.getRef(refName).value.takeIf { it.toOidOrNull() != null }
-            ?: throw IllegalArgumentException("$refName branch does not exist!")
+            ?: return UNKNOWN_REF
+
+        if (remoteRef != null /* null -> new ref, that's OK */ && !localKgit.isAncestor(localRef.toOid(), remoteRef.ref.oid)) {
+            return FORCE_PUSH_REJECTED
+        }
 
         val knownRemoteRefs = remoteRefs
             .filter { localData.objectExists(it.ref.oid) }
@@ -54,5 +61,11 @@ class Remote(private val localData: ObjectDatabase, private val localKgit: KGit)
         }
 
         remoteData.updateRef(refName, RefValue(value = localRef))
+
+        return PushResult.OK
     }
+}
+
+enum class PushResult {
+    OK, UNKNOWN_REF, FORCE_PUSH_REJECTED
 }
