@@ -229,8 +229,14 @@ class KGit(private val data: ObjectDatabase, private val diff: Diff) {
     fun add(file: String) {
         val toBeAdded = File("${data.workDir}/$file")
             .takeIf(File::exists)
+            ?.takeIf { !it.isIgnored() }
             ?: return
-        data.addToIndex(toBeAdded)
+        when {
+            toBeAdded.isFile -> data.addToIndex(toBeAdded)
+            else -> (toBeAdded.listFiles() ?: emptyArray()).onEach {
+                add(File(data.workDir).relpath(it))
+            }
+        }
     }
 }
 
