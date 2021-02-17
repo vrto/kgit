@@ -226,6 +226,12 @@ class KGit(private val data: ObjectDatabase, private val diff: Diff) {
 
     fun isAncestor(commit: Oid, maybeAncestor: Oid): Boolean = maybeAncestor in listCommitsAndParents(listOf(commit))
 
+    fun add(file: String) {
+        val toBeAdded = File("${data.workDir}/$file")
+            .takeIf(File::exists)
+            ?: return
+        data.addToIndex(toBeAdded)
+    }
 }
 
 enum class MergeResult {

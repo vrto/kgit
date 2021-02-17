@@ -1,6 +1,7 @@
 package kgit.data
 
 import kgit.base.createNewFileWithinHierarchy
+import kgit.base.relpath
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
@@ -150,6 +151,17 @@ class ObjectDatabase(val workDir: String) {
     }
 
     fun objectExists(oid: Oid): Boolean = File("$workDir/$OBJECTS_DIR/$oid").exists()
+
+    fun getIndex() = Index("$workDir/$KGIT_DIR/index")
+
+    fun addToIndex(file: File) {
+        val content = file.readText()
+        val oid = hashObject(content.toByteArray(), TYPE_BLOB)
+
+        // foo.txt for a file in the workdir root
+        // subdir/nested.txt for a file in a nested dir
+        getIndex()[File(workDir).relpath(file)] = oid
+    }
 }
 
 class InvalidTypeException(expected: String, actual: String)

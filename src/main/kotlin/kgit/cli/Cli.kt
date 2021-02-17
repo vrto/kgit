@@ -35,7 +35,8 @@ fun main(args: Array<String>) {
             Merge(kgit),
             MergeBase(kgit),
             Fetch(remote),
-            Push(remote)
+            Push(remote),
+            Add(kgit),
         ).main(args)
 }
 

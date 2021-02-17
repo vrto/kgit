@@ -28,3 +28,5 @@ fun File.emptyDir() {
         .filter { it.path != this.path } // no self-delete
         .forEach { it.delete() }
 }
+
+fun File.relpath(nested: File): String = this.toPath().relativize(nested.toPath()).toString()

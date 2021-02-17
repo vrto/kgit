@@ -271,6 +271,31 @@ class ObjectDatabaseTest {
             assertThat(remoteData.getObject(oid, TYPE_BLOB)).isEqualTo("test object")
         }
     }
+
+    @Nested
+    inner class IndexOps {
+
+        @BeforeEach
+        fun initDb() {
+            data.init()
+        }
+
+        @Test
+        fun `should get index from the filesystem`() {
+            val oid = data.hashObject("this goes to index".toByteArray(), TYPE_BLOB)
+            File("$KGIT_DIR/index").writeText("""{"foo": "$oid"}""")
+            val index = data.getIndex()
+            assertThat(index["foo"]).isEqualTo(oid)
+        }
+
+        @Test
+        fun `should save index to the filesystem`() {
+            data.addToIndex(File("$STATIC_STRUCTURE/cats.txt"))
+
+            val indexContent = File("$KGIT_DIR/index").readText()
+            assertThat(indexContent).contains("""{"cats.txt": """")
+        }
+    }
 }
 
 private fun assertFileDoesNotExists(path: String) {
