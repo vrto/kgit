@@ -14,6 +14,7 @@ class TreesTest : DynamicStructureAware() {
 
     @Test
     fun `should write tree`() {
+        kgit.add(".")
         val treeOid = kgit.writeTree()
 
         val content = data.getObject(treeOid, TYPE_TREE)
@@ -30,6 +31,7 @@ class TreesTest : DynamicStructureAware() {
 
     @Test
     fun `should get an already saved tree`() {
+        kgit.add(".")
         val treeOid = kgit.writeTree()
 
         val tree = kgit.getTree(treeOid).parseState(basePath = "./", kgit::getTree)
@@ -41,7 +43,11 @@ class TreesTest : DynamicStructureAware() {
 
     @Test
     fun `should write tree, modify files & read back the original tree`() {
+        // fs -> index (tracked)
+        kgit.add(".")
+        // index -> fs
         val treeOid = kgit.writeTree()
+
         modifyCurrentWorkingDirFiles()
 
         assertFilesChanged()

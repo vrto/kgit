@@ -49,4 +49,4 @@ class Index(private val path: String) {
 
 }
 
-private typealias IndexNode=MutableMap<String, Any>
+typealias IndexNode=MutableMap<String, Any>

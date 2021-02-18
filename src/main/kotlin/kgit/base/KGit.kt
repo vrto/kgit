@@ -16,19 +16,24 @@ class KGit(private val data: ObjectDatabase, private val diff: Diff) {
         data.updateRef("HEAD", RefValue(symbolic = true, value = "refs/heads/master"))
     }
 
-    fun writeTree(directory: String = data.workDir): Oid {
-        val children = File(directory).listFiles()!!
+    fun writeTree(indexNode: IndexNode? = null): Oid {
+        // continue progress using the leaf node, or start from root
+        val index = indexNode ?: data.getIndex().inflate()
+
+        // flat files first, sub-maps (dirs) next
+        val children = index.entries.reversed()
+
         val tree = children
-            .filterNot { it.isIgnored() }
-            .map {
+                //TODO clean up
+//            .filterNot { it.isIgnored() }
+            .map { (path, value) ->
                 when {
-                    it.isDirectory -> {
-                        val oid = writeTree(it.absolutePath)
-                        Tree.Entry(TYPE_TREE, oid, it.name)
+                    value is Map<*,*> -> {
+                        @Suppress("UNCHECKED_CAST") val oid = writeTree(value as IndexNode)
+                        Tree.Entry(TYPE_TREE, oid, path)
                     }
                     else -> {
-                        val oid = data.hashObject(it.readBytes(), TYPE_BLOB)
-                        Tree.Entry(TYPE_BLOB, oid, it.name)
+                        Tree.Entry(TYPE_BLOB, value as Oid, path)
                     }
                 }
             }.toTree()
