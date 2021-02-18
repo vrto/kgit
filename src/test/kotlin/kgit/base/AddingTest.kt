@@ -1,13 +1,10 @@
 package kgit.base
 
-import assertk.Assert
 import assertk.assertThat
-import assertk.assertions.isEqualTo
-import assertk.assertions.isNotNull
 import assertk.assertions.isTrue
 import kgit.DYNAMIC_STRUCTURE
 import kgit.DynamicStructureAware
-import kgit.data.Index
+import kgit.data.containsExactKeys
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import java.io.File
@@ -87,13 +84,4 @@ class AddingTest : DynamicStructureAware() {
         }
     }
 
-}
-
-private fun Assert<Index>.containsExactKeys(vararg keys: String) {
-    given { actual ->
-        assertThat(actual.getSize()).isEqualTo(keys.size)
-        keys.forEach { key ->
-            assertThat(actual[key]).isNotNull()
-        }
-    }
 }
