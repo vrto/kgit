@@ -24,11 +24,9 @@ class KGit(private val data: ObjectDatabase, private val diff: Diff) {
         val children = index.entries.reversed()
 
         val tree = children
-                //TODO clean up
-//            .filterNot { it.isIgnored() }
             .map { (path, value) ->
-                when {
-                    value is Map<*,*> -> {
+                when (value) {
+                    is Map<*,*> -> {
                         @Suppress("UNCHECKED_CAST") val oid = writeTree(value as IndexNode)
                         Tree.Entry(TYPE_TREE, oid, path)
                     }
