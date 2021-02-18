@@ -10,6 +10,7 @@ class AncestryTest : DynamicStructureAware() {
 
     @Test
     fun `should recognize ancestors`() {
+        kgit.add(".")
         val first = kgit.commit("first")
         kgit.createBranch("master", first)
         kgit.checkout("master")
@@ -18,6 +19,7 @@ class AncestryTest : DynamicStructureAware() {
 
         kgit.createBranch("feature", first)
         kgit.checkout("feature")
+        kgit.add(".")
         val feature = kgit.commit("feature commit")
 
         assertThat(kgit.isAncestor(commit = second, maybeAncestor = first)).isTrue()

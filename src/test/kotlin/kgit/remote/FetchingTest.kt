@@ -16,6 +16,7 @@ class FetchingTest : DynamicRemoteStructureAware() {
 
     @Test
     fun `should fetch the single remote master branch with no exta objects`() {
+        remoteKgit.add(".")
         val first = remoteKgit.commit("first")
         remoteKgit.createBranch("master", first)
 
@@ -25,13 +26,16 @@ class FetchingTest : DynamicRemoteStructureAware() {
 
     @Test
     fun `should fetch the single remote master branch with an extra object`() {
+        remoteKgit.add(".")
         val first = remoteKgit.commit("first")
         remoteKgit.createBranch("master", first)
 
         remoteKgit.checkout("master")
         addFileToRemoteStructure("new_stuff")
+        remoteKgit.add("new_stuff")
         val remoteCommit = remoteKgit.commit("new stuff added")
 
+        kgit.add(".")
         val firstLocal = kgit.commit("first local")
         kgit.createBranch("master", firstLocal)
 
@@ -50,6 +54,7 @@ class FetchingTest : DynamicRemoteStructureAware() {
 
     @Test
     fun `should fetch multiple remote branches and their objects, and combine with local refs and objects`() {
+        remoteKgit.add(".")
         val first = remoteKgit.commit("first")
         remoteKgit.createBranch("master", first)
 
@@ -57,17 +62,20 @@ class FetchingTest : DynamicRemoteStructureAware() {
         remoteKgit.createBranch("feature", first)
         remoteKgit.checkout("feature")
         addFileToRemoteStructure("feature_idea")
+        remoteKgit.add("feature_idea")
         remoteKgit.commit("feature idea")
 
         // add content to another branch
         remoteKgit.createBranch("testing-something", first)
         remoteKgit.checkout("testing-something")
         addFileToRemoteStructure("testing_something")
+        remoteKgit.add("testing_something")
         remoteKgit.commit("testing something")
 
         // non-branch refs are ignored
         remoteKgit.tag("ignored-tag", first)
 
+        kgit.add(".")
         val firstLocal = kgit.commit("first local")
         kgit.createBranch("master", firstLocal)
 

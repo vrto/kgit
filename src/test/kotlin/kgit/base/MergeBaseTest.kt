@@ -23,15 +23,19 @@ class MergeBaseTest : DynamicStructureAware() {
         //        --o---o
         //              ^
         //              commit B
+        kgit.add(".")
         kgit.commit("first commit")
         val c = kgit.commit("commit C")
+
         kgit.createBranch("A branch", c)
+        kgit.add(".")
         kgit.commit("A - 1")
         kgit.commit("A - 2")
         val a = kgit.commit("Commit A")
 
         kgit.checkout(c.value)
         kgit.createBranch("B branch", c)
+        kgit.add(".")
         kgit.commit("B - 1")
         val b = kgit.commit("Commit B")
 

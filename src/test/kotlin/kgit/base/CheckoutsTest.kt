@@ -11,9 +11,11 @@ class CheckoutsTest : DynamicStructureAware() {
 
     @Test
     fun `should checkout a commit`() {
+        kgit.add(".")
         val orig = kgit.commit("First commit")
 
         modifyCurrentWorkingDirFiles()
+        kgit.add(".")
         val next = kgit.commit("Second commit")
         assertThat(data.getHead().oid).isEqualTo(next)
 
@@ -24,6 +26,7 @@ class CheckoutsTest : DynamicStructureAware() {
 
     @Test
     fun `should checkout a branch`() {
+        kgit.add(".")
         val orig = kgit.commit("First commit")
         kgit.createBranch("test-branch", orig)
 

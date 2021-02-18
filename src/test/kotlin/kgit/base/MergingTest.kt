@@ -37,8 +37,11 @@ class MergingTest : DynamicStructureAware() {
     }
 
     private fun mergeCommitWithHead() {
+        kgit.add(".")
         val orig = kgit.commit("first commit")
+
         modifyCurrentWorkingDirFiles()
+        kgit.add(".")
         kgit.commit("set new HEAD")
 
         val result = kgit.merge(orig)
@@ -66,6 +69,7 @@ class MergingTest : DynamicStructureAware() {
                 "Bark" 
                 return false
         """.trimIndent())
+        kgit.add(".")
         val orig = kgit.commit("Original file")
         kgit.createBranch("a", orig)
         kgit.checkout("a")
@@ -79,6 +83,7 @@ class MergingTest : DynamicStructureAware() {
                 "Bark" 
                 return false
         """.trimIndent())
+        kgit.add(".")
         val versionA = kgit.commit("Version A")
 
         kgit.createBranch("b", orig)
@@ -93,6 +98,7 @@ class MergingTest : DynamicStructureAware() {
                 "Eat homework" 
                 return false
         """.trimIndent())
+        kgit.add(".")
         kgit.commit("Version B")
 
         val result = kgit.merge(versionA)
@@ -123,12 +129,14 @@ class MergingTest : DynamicStructureAware() {
         //      --o---o
         //            ^
         //            some-branch
+        kgit.add(".")
         kgit.commit("start")
         val head = kgit.commit("HEAD")
         kgit.createBranch("some-branch", head)
         kgit.checkout("some-branch")
 
         modifyCurrentWorkingDirFiles()
+        kgit.add(".")
         kgit.commit("new branch commit 1")
         val someBranch = kgit.commit("some-branch ref")
 

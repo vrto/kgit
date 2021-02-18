@@ -17,6 +17,8 @@ class OidListingTest : DynamicStructureAware() {
 
     @Test
     fun `should list all OIDs reachable for ref(s)`() {
+        kgit.add(".")
+
         // o
         val first = kgit.commit("First commit")
 
@@ -42,6 +44,7 @@ class OidListingTest : DynamicStructureAware() {
         // o<----o----o----o
         //       \         ^
         //        <--$     refs/tags/final
+        kgit.add(".")
         val alternate1 = kgit.commit("Idea 1")
 
         // o<----o----o----o
@@ -70,12 +73,15 @@ class OidListingTest : DynamicStructureAware() {
 
     @Test
     fun `should iterate objects in commits`() {
+        kgit.add(".")
         val first = kgit.commit("First commit")
 
         generateNewFile("second")
+        kgit.add("second")
         val second = kgit.commit("Second commit")
 
         generateNewFile("third")
+        kgit.add("third")
         val third = kgit.commit("Third commit")
 
         val objects = kgit.listObjectsInCommits(listOf(first, second, third))
