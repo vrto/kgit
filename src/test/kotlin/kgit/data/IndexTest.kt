@@ -2,6 +2,8 @@ package kgit.data
 
 import assertk.assertThat
 import assertk.assertions.isEqualTo
+import assertk.assertions.isNotEmpty
+import assertk.assertions.isTrue
 import kgit.DYNAMIC_STRUCTURE
 import kgit.DynamicStructureAware
 import org.junit.jupiter.api.Test
@@ -63,7 +65,28 @@ class IndexTest : DynamicStructureAware() {
         ))
     }
 
+    @Test
+    fun `should clear index`() {
+        val (oid1, oid2) = listOf(nextOid(), nextOid())
+        saveIndex("""
+            {
+                "flat": "$oid1",
+                "subdir/nested": "$oid2"
+            }
+        """.trimIndent())
+
+        val index = Index(INDEX_PATH)
+        assertThat(index.getSize()).isEqualTo(2)
+        assertThat(getIndexFileContents()).isNotEmpty()
+
+        index.clear()
+        assertThat(index.isEmpty()).isTrue()
+        assertThat(getIndexFileContents()).isEqualTo("{}")
+    }
+
     private fun nextOid() = data.hashObject(UUID.randomUUID().toString().toByteArray(), TYPE_BLOB)
 
     private fun saveIndex(json: String) = File(INDEX_PATH).writeText(json)
+
+    private fun getIndexFileContents() = File(INDEX_PATH).readText()
 }

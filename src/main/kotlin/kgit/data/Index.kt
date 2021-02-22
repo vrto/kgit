@@ -3,7 +3,7 @@ package kgit.data
 import com.beust.klaxon.Klaxon
 import java.io.File
 
-class Index(private val path: String) {
+class Index(private val path: String): Iterable<Pair<String, Oid>> {
 
     private val json = Klaxon()
     private val data: MutableMap<String, String>
@@ -28,6 +28,11 @@ class Index(private val path: String) {
 
     fun getSize() = data.keys.size
 
+    fun clear() {
+        data.clear()
+        File(path).writeText("{}")
+    }
+
     fun inflate(): Map<String, Any> {
         fun insert(dirNames: List<String>, oid: String, indexAsTree: IndexNode) {
             val first = dirNames.first()
@@ -46,6 +51,8 @@ class Index(private val path: String) {
     }
 
     private fun toRawMap(): Map<String, String> = data.toMap()
+
+    override fun iterator() = data.map { it.key to it.value.toOid() }.iterator()
 
 }
 

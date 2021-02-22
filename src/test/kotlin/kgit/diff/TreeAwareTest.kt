@@ -8,6 +8,7 @@ abstract class TreeAwareTest : DynamicStructureAware() {
         kgit.add(".")
         val orig = kgit.writeTree()
 
+        data.getIndex().clear()
         treeModifier?.run()
         kgit.add(".")
         val changed = kgit.writeTree()

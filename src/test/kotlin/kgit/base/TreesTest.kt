@@ -51,7 +51,7 @@ class TreesTest : DynamicStructureAware() {
         modifyCurrentWorkingDirFiles()
 
         assertFilesChanged()
-        kgit.readTree(treeOid)
+        kgit.readTree(treeOid, updateWorking = true)
         assertFilesRestored()
     }
 }

@@ -18,4 +18,9 @@ abstract class DynamicStructureAware {
         data.init()
     }
 
+    @BeforeEach
+    fun clearIndex() {
+        //TODO
+    }
+
 }
