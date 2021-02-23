@@ -46,7 +46,7 @@ class KGit(private val data: ObjectDatabase, private val diff: Diff) {
 
         val tree = getTree(treeOid).parseState("${data.workDir}/", ::getTree)
         tree.forEach { (path, oid) ->
-            index[path] = oid
+            index[data.workDir.relpath(path)] = oid
         }
 
         if (updateWorking) {
@@ -63,7 +63,7 @@ class KGit(private val data: ObjectDatabase, private val diff: Diff) {
         diff.mergeTrees(baseTree.asComparableTree(), headTree.asComparableTree(), otherTree.asComparableTree())
             .forEach { (path, content) ->
                 val oid = data.hashObject(content.toByteArray(), TYPE_BLOB)
-                index[path] = oid
+                index[data.workDir.relpath(path)] = oid
             }
 
         if (updateWorking) {
@@ -75,7 +75,7 @@ class KGit(private val data: ObjectDatabase, private val diff: Diff) {
         File(data.workDir).emptyDir()
         index.forEach { (path, oid) ->
             val content = data.getObject(oid, TYPE_BLOB)
-            File(path).apply {
+            File("${data.workDir}/$path").apply {
                 createNewFileWithinHierarchy()
                 writeText(content)
             }

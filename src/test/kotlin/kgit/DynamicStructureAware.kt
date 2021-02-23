@@ -20,7 +20,7 @@ abstract class DynamicStructureAware {
 
     @BeforeEach
     fun clearIndex() {
-        //TODO
+        data.getIndex().clear()
     }
 
 }
