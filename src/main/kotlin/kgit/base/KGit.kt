@@ -54,7 +54,7 @@ class KGit(private val data: ObjectDatabase, private val diff: Diff) {
         }
     }
 
-    private fun readTreeMerged(baseTree: Oid, headTree: Oid, otherTree: Oid, updateWorking: Boolean = false) {
+    private fun readTreeMerged(baseTree: Oid, headTree: Oid, otherTree: Oid, updateWorking: Boolean = false) { //TODO needed?
         fun Oid.asComparableTree() = getComparableTree(this)
 
         val index = data.getIndex()
