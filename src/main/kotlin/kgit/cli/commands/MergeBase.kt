@@ -6,7 +6,7 @@ import kgit.base.KGit
 import kgit.data.toOid
 
 class MergeBase(private val kgit: KGit)
-    : CliktCommand(name = "merge-base", help = "Computer a common ancestor of two commits") {
+    : CliktCommand(name = "merge-base", help = "Compute a common ancestor of two commits") {
 
     private val commit1: String by argument("Commit 1 to compare")
     private val commit2: String by argument("Commit 2 to compare")
