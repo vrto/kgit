@@ -16,19 +16,22 @@ class KGit(private val data: ObjectDatabase, private val diff: Diff) {
         data.updateRef("HEAD", RefValue(symbolic = true, value = "refs/heads/master"))
     }
 
-    fun writeTree(directory: String = data.workDir): Oid {
-        val children = File(directory).listFiles()!!
+    fun writeTree(indexNode: IndexNode? = null): Oid {
+        // continue progress using the leaf node, or start from root
+        val index = indexNode ?: data.getIndex().inflate()
+
+        // flat files first, sub-maps (dirs) next
+        val children = index.entries.reversed()
+
         val tree = children
-            .filterNot { it.isIgnored() }
-            .map {
-                when {
-                    it.isDirectory -> {
-                        val oid = writeTree(it.absolutePath)
-                        Tree.Entry(TYPE_TREE, oid, it.name)
+            .map { (path, value) ->
+                when (value) {
+                    is Map<*,*> -> {
+                        @Suppress("UNCHECKED_CAST") val oid = writeTree(value as IndexNode)
+                        Tree.Entry(TYPE_TREE, oid, path)
                     }
                     else -> {
-                        val oid = data.hashObject(it.readBytes(), TYPE_BLOB)
-                        Tree.Entry(TYPE_BLOB, oid, it.name)
+                        Tree.Entry(TYPE_BLOB, value as Oid, path)
                     }
                 }
             }.toTree()
@@ -37,29 +40,44 @@ class KGit(private val data: ObjectDatabase, private val diff: Diff) {
         return data.hashObject(rawBytes, TYPE_TREE)
     }
 
-    fun readTree(treeOid: Oid) {
-        File(data.workDir).emptyDir()
+    fun readTree(treeOid: Oid, updateWorking: Boolean = false) {
+        val index = data.getIndex()
+        index.clear()
+
         val tree = getTree(treeOid).parseState("${data.workDir}/", ::getTree)
-        tree.forEach {
-            val obj = data.getObject(it.oid, expectedType = TYPE_BLOB)
-            File(it.path).apply {
-                createNewFileWithinHierarchy()
-                writeText(obj)
-            }
+        tree.forEach { (path, oid) ->
+            index[data.workDir.relpath(path)] = oid
+        }
+
+        if (updateWorking) {
+            checkoutIndex(index)
         }
     }
 
-    private fun readTreeMerged(baseTree: Oid, headTree: Oid, otherTree: Oid) {
+    private fun readTreeMerged(baseTree: Oid, headTree: Oid, otherTree: Oid) { //TODO needed?
         fun Oid.asComparableTree() = getComparableTree(this)
 
-        File(data.workDir).emptyDir()
+        val index = data.getIndex()
+        index.clear()
+
         diff.mergeTrees(baseTree.asComparableTree(), headTree.asComparableTree(), otherTree.asComparableTree())
             .forEach { (path, content) ->
-                File(path).apply {
-                    createNewFileWithinHierarchy()
-                    writeText(content)
-                }
+                val oid = data.hashObject(content.toByteArray(), TYPE_BLOB)
+                index[data.workDir.relpath(path)] = oid
             }
+
+        checkoutIndex(index)
+    }
+
+    private fun checkoutIndex(index: Index) {
+        File(data.workDir).emptyDir()
+        index.forEach { (path, oid) ->
+            val content = data.getObject(oid, TYPE_BLOB)
+            File("${data.workDir}/$path").apply {
+                createNewFileWithinHierarchy()
+                writeText(content)
+            }
+        }
     }
 
     internal fun getTree(oid: Oid): Tree {
@@ -83,6 +101,11 @@ class KGit(private val data: ObjectDatabase, private val diff: Diff) {
         }
         .toList()
 
+    fun addAllAndCommit(message: String): Oid {
+        add(".")
+        return commit(message)
+    }
+
     fun commit(message: String): Oid {
         val treeOid = writeTree()
         val parents = mutableListOf<Oid>().apply {
@@ -92,9 +115,13 @@ class KGit(private val data: ObjectDatabase, private val diff: Diff) {
                 data.deleteRef("MERGE_HEAD", deref = false)
             }
         }
+
         val commit = Commit(treeOid, parents, message)
         return data.hashObject(commit.toString().encodeToByteArray(), TYPE_COMMIT).also {
             data.setHead(it.toDirectRef())
+
+            // changes from index recorded, next commit starts w/ clean index
+            data.getIndex().clear()
         }
     }
 
@@ -115,7 +142,7 @@ class KGit(private val data: ObjectDatabase, private val diff: Diff) {
     fun checkout(name: String) {
         val oid = getOid(name)
         val commit = getCommit(oid)
-        readTree(commit.treeOid)
+        readTree(commit.treeOid, updateWorking = true)
 
         if (name.isBranch()) {
             data.setHead(RefValue(symbolic = true, value = "refs/heads/$name"), deref = false)
@@ -205,7 +232,7 @@ class KGit(private val data: ObjectDatabase, private val diff: Diff) {
         val otherCommit = getCommit(other)
 
         if (mergeBase == head) {
-            readTree(treeOid = otherCommit.treeOid)
+            readTree(treeOid = otherCommit.treeOid, updateWorking = true)
             data.setHead(RefValue(symbolic = false, value = other.value))
             return FAST_FORWARDED
         }

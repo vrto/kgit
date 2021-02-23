@@ -18,16 +18,16 @@ class OidListingTest : DynamicStructureAware() {
     @Test
     fun `should list all OIDs reachable for ref(s)`() {
         // o
-        val first = kgit.commit("First commit")
+        val first = kgit.addAllAndCommit("First commit")
 
         // o<----o
-        val second = kgit.commit("Second commit")
+        val second = kgit.addAllAndCommit("Second commit")
 
         // o<----o----o
-        val third = kgit.commit("Third commit")
+        val third = kgit.addAllAndCommit("Third commit")
 
         // o<----o----o----o
-        val final = kgit.commit("Final idea")
+        val final = kgit.addAllAndCommit("Final idea")
 
         // o<----o----o----@
         //                 ^
@@ -42,12 +42,12 @@ class OidListingTest : DynamicStructureAware() {
         // o<----o----o----o
         //       \         ^
         //        <--$     refs/tags/final
-        val alternate1 = kgit.commit("Idea 1")
+        val alternate1 = kgit.addAllAndCommit("Idea 1")
 
         // o<----o----o----o
         //       \         ^
         //        <--$---$ refs/tags/final
-        val alternate2 = kgit.commit("Idea 1 some more")
+        val alternate2 = kgit.addAllAndCommit("Idea 1 some more")
 
         // o<----o----o----o
         //       \         ^
@@ -70,12 +70,14 @@ class OidListingTest : DynamicStructureAware() {
 
     @Test
     fun `should iterate objects in commits`() {
-        val first = kgit.commit("First commit")
+        val first = kgit.addAllAndCommit("First commit")
 
         generateNewFile("second")
+        kgit.add("second")
         val second = kgit.commit("Second commit")
 
         generateNewFile("third")
+        kgit.add("third")
         val third = kgit.commit("Third commit")
 
         val objects = kgit.listObjectsInCommits(listOf(first, second, third))

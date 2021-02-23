@@ -79,12 +79,10 @@ class MergingTest : TreeAwareTest() {
             val merged = diff.mergeTrees(base, from, to)
             assertThat(merged).containsExactly(
                 FileMerge(path = "$DYNAMIC_STRUCTURE/flat.txt", content = """
-                    <<<<<<< HEAD
-                    changed content
-                    ||||||| BASE
+                    <<<<<<< BASE
                     orig content
                     =======
-    
+                    changed content
                     >>>>>>> MERGE_HEAD
                     
                     """.trimIndent()

@@ -30,3 +30,5 @@ fun File.emptyDir() {
 }
 
 fun File.relpath(nested: File): String = this.toPath().relativize(nested.toPath()).toString()
+
+fun String.relpath(nested: String): String = File(this).relpath(File(nested))

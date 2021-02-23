@@ -23,5 +23,10 @@ abstract class DynamicRemoteStructureAware : DynamicStructureAware() {
         remoteData.init()
     }
 
+    @BeforeEach
+    fun clearRemoteIndex() {
+        remoteData.getIndex().clear()
+    }
+
     open fun setData() = data
 }

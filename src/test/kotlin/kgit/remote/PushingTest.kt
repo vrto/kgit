@@ -30,7 +30,7 @@ class PushingTest : DynamicRemoteStructureAware() {
 
     @Test
     fun `should push the single local master branch with no extra objects`() {
-        val first = kgit.commit("first")
+        val first = kgit.addAllAndCommit("first")
         kgit.createBranch("master", first)
 
         assertThat(remoteData.listRefs()).doesNotContain("heads/master")
@@ -43,15 +43,16 @@ class PushingTest : DynamicRemoteStructureAware() {
 
     @Test
     fun `should push the single local master branch with an extra object`() {
-        val first = kgit.commit("first")
+        val first = kgit.addAllAndCommit("first")
         kgit.createBranch("master", first)
 
         kgit.checkout("master")
         addFileToLocalStructure("new_stuff")
+        kgit.add("new_stuff")
         val localCommit = kgit.commit("new stuff added")
 
         // copy the same initial commit
-        val firstRemote = remoteKgit.commit("first")
+        val firstRemote = remoteKgit.addAllAndCommit("first")
         remoteKgit.createBranch("master", firstRemote)
 
         // remote kgit does not 'see' local commit
@@ -72,16 +73,17 @@ class PushingTest : DynamicRemoteStructureAware() {
 
     @Test
     fun `should push changes to the remote branch`() {
-        val first = kgit.commit("first")
+        val first = kgit.addAllAndCommit("first")
         kgit.createBranch("master", first)
 
         // add content to one branch
         kgit.createBranch("feature", first)
         kgit.checkout("feature")
         addFileToLocalStructure("feature_idea")
+        kgit.add("feature_idea")
         kgit.commit("feature idea")
 
-        val firstRemote = remoteKgit.commit("first")
+        val firstRemote = remoteKgit.addAllAndCommit("first")
         remoteKgit.createBranch("master", firstRemote)
 
         // sync master
@@ -101,14 +103,15 @@ class PushingTest : DynamicRemoteStructureAware() {
 
     @Test
     fun `should push changes to the remote efficiently`() {
-        val first = kgit.commit("first")
+        val first = kgit.addAllAndCommit("first")
         kgit.createBranch("master", first)
 
         kgit.checkout("master")
         addFileToLocalStructure("new_file")
+        kgit.add("new_file")
         kgit.commit("add new_file")
 
-        val firstRemote = remoteKgit.commit("first")
+        val firstRemote = remoteKgit.addAllAndCommit("first")
         remoteKgit.createBranch("master", firstRemote)
 
         val result = remote.push(DYNAMIC_REMOTE_STRUCTURE, "refs/heads/master")
@@ -123,18 +126,20 @@ class PushingTest : DynamicRemoteStructureAware() {
 
     @Test
     fun `should reject force push`() {
-        val first = kgit.commit("first")
+        val first = kgit.addAllAndCommit("first")
         kgit.createBranch("master", first)
 
         kgit.checkout("master")
         addFileToLocalStructure("new_file")
+        kgit.add("new_file")
         kgit.commit("add new_file")
 
-        val firstRemote = remoteKgit.commit("first")
+        val firstRemote = remoteKgit.addAllAndCommit("first")
         remoteKgit.createBranch("master", firstRemote)
 
         remoteKgit.checkout("master")
         addFileToRemoteStructure("another_file")
+        remoteKgit.add("another_file")
         remoteKgit.commit("add another_file")
 
         val result = remote.push(DYNAMIC_REMOTE_STRUCTURE, "refs/heads/master")

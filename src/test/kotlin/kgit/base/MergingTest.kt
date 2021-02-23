@@ -37,9 +37,10 @@ class MergingTest : DynamicStructureAware() {
     }
 
     private fun mergeCommitWithHead() {
-        val orig = kgit.commit("first commit")
+        val orig = kgit.addAllAndCommit("first commit")
+
         modifyCurrentWorkingDirFiles()
-        kgit.commit("set new HEAD")
+        kgit.addAllAndCommit("set new HEAD")
 
         val result = kgit.merge(orig)
         assertThat(result).isEqualTo(MERGED)
@@ -66,7 +67,7 @@ class MergingTest : DynamicStructureAware() {
                 "Bark" 
                 return false
         """.trimIndent())
-        val orig = kgit.commit("Original file")
+        val orig = kgit.addAllAndCommit("Original file")
         kgit.createBranch("a", orig)
         kgit.checkout("a")
 
@@ -79,7 +80,7 @@ class MergingTest : DynamicStructureAware() {
                 "Bark" 
                 return false
         """.trimIndent())
-        val versionA = kgit.commit("Version A")
+        val versionA = kgit.addAllAndCommit("Version A")
 
         kgit.createBranch("b", orig)
         kgit.checkout("b")
@@ -93,7 +94,7 @@ class MergingTest : DynamicStructureAware() {
                 "Eat homework" 
                 return false
         """.trimIndent())
-        kgit.commit("Version B")
+        kgit.addAllAndCommit("Version B")
 
         val result = kgit.merge(versionA)
         assertThat(result).isEqualTo(MERGED)
@@ -123,14 +124,16 @@ class MergingTest : DynamicStructureAware() {
         //      --o---o
         //            ^
         //            some-branch
-        kgit.commit("start")
-        val head = kgit.commit("HEAD")
+        kgit.addAllAndCommit("start")
+        val head = kgit.addAllAndCommit("HEAD")
+
         kgit.createBranch("some-branch", head)
         kgit.checkout("some-branch")
 
         modifyCurrentWorkingDirFiles()
-        kgit.commit("new branch commit 1")
-        val someBranch = kgit.commit("some-branch ref")
+
+        kgit.addAllAndCommit("new branch commit 1")
+        val someBranch = kgit.addAllAndCommit("some-branch ref")
 
         // move HEAD back
         kgit.checkout(head.value)

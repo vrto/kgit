@@ -5,8 +5,12 @@ import kgit.DynamicStructureAware
 abstract class TreeAwareTest : DynamicStructureAware() {
 
     protected fun createTrees(treeModifier: Runnable? = null): Pair<ComparableTree, ComparableTree> {
+        kgit.add(".")
         val orig = kgit.writeTree()
+
+        data.getIndex().clear()
         treeModifier?.run()
+        kgit.add(".")
         val changed = kgit.writeTree()
 
         val from = kgit.getComparableTree(orig)
@@ -17,8 +21,11 @@ abstract class TreeAwareTest : DynamicStructureAware() {
     data class TreesWithBase(val base: ComparableTree, val from: ComparableTree, val to: ComparableTree)
 
     protected fun createTwoTreesWithBase(treeModifier: Runnable? = null): TreesWithBase {
+        kgit.add(".")
         val orig = kgit.writeTree()
+
         treeModifier?.run()
+        kgit.add(".")
         val changed = kgit.writeTree()
 
         return TreesWithBase(
@@ -29,12 +36,15 @@ abstract class TreeAwareTest : DynamicStructureAware() {
     }
 
     protected fun createThreeTreesWithBase(firstTreeChange: Runnable, secondTreeChange: Runnable): TreesWithBase {
+        kgit.add(".")
         val orig = kgit.writeTree()
 
         firstTreeChange.run()
+        kgit.add(".")
         val changed1 = kgit.writeTree()
 
         secondTreeChange.run()
+        kgit.add(".")
         val changed2 = kgit.writeTree()
 
         return TreesWithBase(
