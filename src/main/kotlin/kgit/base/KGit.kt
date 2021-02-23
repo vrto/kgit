@@ -54,7 +54,7 @@ class KGit(private val data: ObjectDatabase, private val diff: Diff) {
         }
     }
 
-    private fun readTreeMerged(baseTree: Oid, headTree: Oid, otherTree: Oid, updateWorking: Boolean = false) { //TODO needed?
+    private fun readTreeMerged(baseTree: Oid, headTree: Oid, otherTree: Oid) { //TODO needed?
         fun Oid.asComparableTree() = getComparableTree(this)
 
         val index = data.getIndex()
@@ -66,9 +66,7 @@ class KGit(private val data: ObjectDatabase, private val diff: Diff) {
                 index[data.workDir.relpath(path)] = oid
             }
 
-        if (updateWorking) {
-            checkoutIndex(index)
-        }
+        checkoutIndex(index)
     }
 
     private fun checkoutIndex(index: Index) {
@@ -242,7 +240,7 @@ class KGit(private val data: ObjectDatabase, private val diff: Diff) {
         data.updateRef("MERGE_HEAD", RefValue(symbolic = false, value = other.value))
         val baseCommit = getCommit(getMergeBase(other, data.getHead().oid))
         val headCommit = getCommit(data.getHead().oid)
-        readTreeMerged(baseCommit.treeOid, otherCommit.treeOid, headCommit.treeOid, updateWorking = true)
+        readTreeMerged(baseCommit.treeOid, otherCommit.treeOid, headCommit.treeOid)
 
         return MERGED
     }
