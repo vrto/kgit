@@ -93,7 +93,7 @@ class KGit(private val data: ObjectDatabase, private val diff: Diff) {
 
     internal fun getComparableTree(oid: Oid): ComparableTree = getTree(oid).parseState("${data.workDir}/", this::getTree)
 
-    fun getWorkingTree(): List<FileState> = File(data.workDir)
+    fun getWorkingTree(): ComparableTree = File(data.workDir)
         .walk()
         .filterNot { it.isDirectory }
         .filterNot { it.isIgnored() }
@@ -101,6 +101,8 @@ class KGit(private val data: ObjectDatabase, private val diff: Diff) {
             FileState(it.path, data.hashObject(it.readBytes(), TYPE_BLOB))
         }
         .toList()
+
+    fun getIndexTree(): ComparableTree = data.getIndex().asComparableTree()
 
     fun addAllAndCommit(message: String): Oid {
         add(".")

@@ -20,7 +20,7 @@ class Status(private val kgit: KGit, private val diff: Diff, private val data: O
 
         val headTree = kgit.getComparableTree(kgit.getCommit(kgit.getOid("@")).treeOid)
         val workingTree = kgit.getWorkingTree()
-        val indexTree = data.getIndex().asComparableTree()
+        val indexTree = kgit.getIndexTree()
 
         val staged = diff.listFileChanges(headTree, indexTree)
         echo("Changes to be committed:")
