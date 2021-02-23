@@ -71,6 +71,7 @@ class KGit(private val data: ObjectDatabase, private val diff: Diff) {
 
     private fun checkoutIndex(index: Index) {
         File(data.workDir).emptyDir()
+
         index.forEach { (path, oid) ->
             val content = data.getObject(oid, TYPE_BLOB)
             File("${data.workDir}/$path").apply {
@@ -119,9 +120,6 @@ class KGit(private val data: ObjectDatabase, private val diff: Diff) {
         val commit = Commit(treeOid, parents, message)
         return data.hashObject(commit.toString().encodeToByteArray(), TYPE_COMMIT).also {
             data.setHead(it.toDirectRef())
-
-            // changes from index recorded, next commit starts w/ clean index
-            data.getIndex().clear()
         }
     }
 

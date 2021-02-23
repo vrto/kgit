@@ -1,6 +1,8 @@
 package kgit.data
 
 import com.beust.klaxon.Klaxon
+import kgit.base.Tree.FileState
+import kgit.diff.ComparableTree
 import java.io.File
 
 class Index(private val path: String): Iterable<Pair<String, Oid>> {
@@ -53,6 +55,10 @@ class Index(private val path: String): Iterable<Pair<String, Oid>> {
     private fun toRawMap(): Map<String, String> = data.toMap()
 
     override fun iterator() = data.map { it.key to it.value.toOid() }.iterator()
+
+    fun asComparableTree(): ComparableTree = data.map { (path, oid) ->
+        FileState("./$path", oid.toOid())
+    }
 
 }
 

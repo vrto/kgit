@@ -15,6 +15,7 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib"))
+    implementation(kotlin("reflect"))
     implementation("com.github.ajalt.clikt:clikt:3.0.1")
     implementation("guru.nidi:graphviz-kotlin:0.18.0")
     implementation("com.beust:klaxon:5.0.1")

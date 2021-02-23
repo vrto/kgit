@@ -19,8 +19,15 @@ class Status(private val kgit: KGit, private val diff: Diff, private val data: O
         }
 
         val headTree = kgit.getComparableTree(kgit.getCommit(kgit.getOid("@")).treeOid)
-        val changes = diff.listFileChanges(headTree, kgit.getWorkingTree())
+        val workingTree = kgit.getWorkingTree()
+        val indexTree = data.getIndex().asComparableTree()
+
+        val staged = diff.listFileChanges(headTree, indexTree)
         echo("Changes to be committed:")
-        changes.forEach { println("${it.action}: ${it.path}") }
+        staged.forEach { println("${it.action}: ${it.path}") }
+
+        val unstaged = diff.listFileChanges(indexTree, workingTree)
+        echo("\nChanges not staged for commit:")
+        unstaged.forEach { println("${it.action}: ${it.path}") }
     }
 }

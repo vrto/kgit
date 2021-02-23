@@ -6,6 +6,7 @@ import assertk.assertions.isNotEmpty
 import assertk.assertions.isTrue
 import kgit.DYNAMIC_STRUCTURE
 import kgit.DynamicStructureAware
+import kgit.base.Tree.FileState
 import org.junit.jupiter.api.Test
 import java.io.File
 import java.util.*
@@ -82,6 +83,20 @@ class IndexTest : DynamicStructureAware() {
         index.clear()
         assertThat(index.isEmpty()).isTrue()
         assertThat(getIndexFileContents()).isEqualTo("{}")
+    }
+
+    @Test
+    fun `should get index as ComparableTree`() {
+        val (oid1, oid2) = listOf(nextOid(), nextOid())
+        saveIndex("""
+            {
+                "flat": "$oid1",
+                "subdir/nested": "$oid2"
+            }
+        """.trimIndent())
+
+        val tree = Index(INDEX_PATH).asComparableTree()
+        assertThat(tree).isEqualTo(listOf(FileState("./flat", oid1), FileState("./subdir/nested", oid2)))
     }
 
     private fun nextOid() = data.hashObject(UUID.randomUUID().toString().toByteArray(), TYPE_BLOB)
