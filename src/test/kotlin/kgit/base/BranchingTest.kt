@@ -14,8 +14,7 @@ class BranchingTest : DynamicStructureAware() {
 
     @BeforeEach
     fun createFirstCommit() {
-        kgit.add(".")
-        oid = kgit.commit("First commit")
+        oid = kgit.addAllAndCommit("First commit")
     }
 
     @Test

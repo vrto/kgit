@@ -16,8 +16,7 @@ class FetchingTest : DynamicRemoteStructureAware() {
 
     @Test
     fun `should fetch the single remote master branch with no exta objects`() {
-        remoteKgit.add(".")
-        val first = remoteKgit.commit("first")
+        val first = remoteKgit.addAllAndCommit("first")
         remoteKgit.createBranch("master", first)
 
         val refs = remote.fetch(DYNAMIC_REMOTE_STRUCTURE)
@@ -26,8 +25,7 @@ class FetchingTest : DynamicRemoteStructureAware() {
 
     @Test
     fun `should fetch the single remote master branch with an extra object`() {
-        remoteKgit.add(".")
-        val first = remoteKgit.commit("first")
+        val first = remoteKgit.addAllAndCommit("first")
         remoteKgit.createBranch("master", first)
 
         remoteKgit.checkout("master")
@@ -35,8 +33,7 @@ class FetchingTest : DynamicRemoteStructureAware() {
         remoteKgit.add("new_stuff")
         val remoteCommit = remoteKgit.commit("new stuff added")
 
-        kgit.add(".")
-        val firstLocal = kgit.commit("first local")
+        val firstLocal = kgit.addAllAndCommit("first local")
         kgit.createBranch("master", firstLocal)
 
         // local kgit does not 'see' remote commit
@@ -54,8 +51,7 @@ class FetchingTest : DynamicRemoteStructureAware() {
 
     @Test
     fun `should fetch multiple remote branches and their objects, and combine with local refs and objects`() {
-        remoteKgit.add(".")
-        val first = remoteKgit.commit("first")
+        val first = remoteKgit.addAllAndCommit("first")
         remoteKgit.createBranch("master", first)
 
         // add content to one branch
@@ -75,8 +71,7 @@ class FetchingTest : DynamicRemoteStructureAware() {
         // non-branch refs are ignored
         remoteKgit.tag("ignored-tag", first)
 
-        kgit.add(".")
-        val firstLocal = kgit.commit("first local")
+        val firstLocal = kgit.addAllAndCommit("first local")
         kgit.createBranch("master", firstLocal)
 
         val refs = remote.fetch(DYNAMIC_REMOTE_STRUCTURE)

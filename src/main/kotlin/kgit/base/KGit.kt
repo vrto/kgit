@@ -103,6 +103,11 @@ class KGit(private val data: ObjectDatabase, private val diff: Diff) {
         }
         .toList()
 
+    fun addAllAndCommit(message: String): Oid {
+        add(".")
+        return commit(message)
+    }
+
     fun commit(message: String): Oid {
         val treeOid = writeTree()
         val parents = mutableListOf<Oid>().apply {
@@ -112,9 +117,13 @@ class KGit(private val data: ObjectDatabase, private val diff: Diff) {
                 data.deleteRef("MERGE_HEAD", deref = false)
             }
         }
+
         val commit = Commit(treeOid, parents, message)
         return data.hashObject(commit.toString().encodeToByteArray(), TYPE_COMMIT).also {
             data.setHead(it.toDirectRef())
+
+            // changes from index recorded, next commit starts w/ clean index
+            data.getIndex().clear()
         }
     }
 
